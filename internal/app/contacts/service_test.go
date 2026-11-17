@@ -689,7 +689,16 @@ func (s *marksbotSearchStore) Search(ctx context.Context, currentUserID int64, q
 		return res, err
 	}
 	if strings.Contains(strings.ToLower(query), "marks") {
-		res.Results = append(res.Results, domain.VerifierBotUser())
+		found := false
+		for _, user := range res.Results {
+			if user.ID == domain.VerifierBotUserID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			res.Results = append(res.Results, domain.VerifierBotUser())
+		}
 	}
 	return res, nil
 }
