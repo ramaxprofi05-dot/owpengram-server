@@ -159,6 +159,7 @@ func TestValidatePackageArchiveRejectsUnsafeDuplicateAndSymlinkEntries(t *testin
 			}
 		})
 	}
+}
 
 func TestValidatePackageArchiveRejectsMalformedAndManifestlessArchives(t *testing.T) {
 	if _, err := ValidatePackageArchive([]byte("not a zip archive"), nil); err == nil {
