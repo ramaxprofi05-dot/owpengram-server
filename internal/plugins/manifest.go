@@ -3,6 +3,7 @@ package plugins
 import (
 	"bytes"
 	"encoding/base64"
+	"crypto/ed25519"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -131,6 +132,45 @@ func ValidateManifest(m Manifest) error {
 		if err != nil || len(raw) != 64 {
 			return errors.New("signature must be a base64-encoded Ed25519 signature")
 		}
+	}
+	return nil
+}
+
+// SigningPayload returns the deterministic JSON payload covered by the Ed25519
+// signature. The signature field is omitted; signer_key_id and sha256 remain
+// covered so a signature cannot be moved to another publisher or package digest.
+func SigningPayload(m Manifest) ([]byte, error) {
+	if err := ValidateManifest(m); err != nil {
+		return nil, err
+	}
+	m.Signature = ""
+	return json.Marshal(m)
+}
+
+// VerifyManifestSignature checks an installable manifest against the explicit
+// trusted publisher key set. A syntactically present signature is not proof
+// of trust: callers must invoke this before accepting a package.
+func VerifyManifestSignature(m Manifest, trustedKeys map[string]ed25519.PublicKey) error {
+	if err := ValidateInstallableManifest(m); err != nil {
+		return err
+	}
+	publicKey, ok := trustedKeys[m.SignerKeyID]
+	if !ok {
+		return fmt.Errorf("plugin signer %q is not trusted", m.SignerKeyID)
+	}
+	if len(publicKey) != ed25519.PublicKeySize {
+		return fmt.Errorf("trusted plugin signer %q has an invalid public key", m.SignerKeyID)
+	}
+	payload, err := SigningPayload(m)
+	if err != nil {
+		return err
+	}
+	signature, err := base64.StdEncoding.DecodeString(m.Signature)
+	if err != nil {
+		return errors.New("plugin signature is not valid base64")
+	}
+	if !ed25519.Verify(publicKey, payload, signature) {
+		return errors.New("plugin signature verification failed")
 	}
 	return nil
 }
