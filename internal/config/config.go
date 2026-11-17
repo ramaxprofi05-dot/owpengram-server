@@ -1158,7 +1158,7 @@ func Load() (Config, error) {
 		BlobBackendKind:                   strings.ToLower(strings.TrimSpace(envOr("TELESRV_BLOB_BACKEND", ""))),
 		BlobDir:                           envOr("TELESRV_BLOB_DIR", "data/blobs"),
 		BlobStagingDir:                    envOr("TELESRV_BLOB_STAGING_DIR", "data/blob-staging"),
-		S3Endpoint:                        envOr("TELESRV_S3_ENDPOINT", ""), // 同理避开 localhost→IPv6 回退延迟
+		S3Endpoint:                        envOr("TELESRV_S3_ENDPOINT", ""),
 		S3Region:                          envOr("TELESRV_S3_REGION", "us-east-1"),
 		S3Bucket:                          envOr("TELESRV_S3_BUCKET", ""),
 		S3AccessKeyID:                     envOr("TELESRV_S3_ACCESS_KEY_ID", ""),
