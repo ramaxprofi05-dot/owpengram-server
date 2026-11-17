@@ -96,12 +96,12 @@ export function PluginsPage() {
         loading={busy && rows.length === 0}
         empty={"No plugin packages have been submitted."}
       />
-      <section className="panel-section">
+      <section className="section-block">
         <h2>{"Publisher trust roots"}</h2>
         <p className="muted">{"Public signing-key registry. Private signing keys are never stored or displayed here."}</p>
         <DataTable columns={publisherColumns} rows={publishers} rowKey={(row) => row.key_id} empty={"No publisher keys registered."} />
       </section>
-      <section className="panel-section">
+      <section className="section-block">
         <h2>{"Review history"}</h2>
         <DataTable columns={eventColumns} rows={events} rowKey={(row) => String(row.id)} empty={"No review events recorded."} />
       </section>
