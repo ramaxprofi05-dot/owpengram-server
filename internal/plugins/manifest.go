@@ -283,6 +283,19 @@ func VerifyPackageDigest(m Manifest, packageBytes []byte) error {
 	return nil
 }
 
+// VerifyPluginPackage is the complete pre-install trust gate. It binds the
+// exact archive bytes to the manifest digest and then verifies the manifest
+// signature against the configured trusted publisher keys.
+func VerifyPluginPackage(m Manifest, packageBytes []byte, trustedKeys map[string]ed25519.PublicKey) error {
+	if err := VerifyPackageDigest(m, packageBytes); err != nil {
+		return err
+	}
+	if err := VerifyManifestSignature(m, trustedKeys); err != nil {
+		return err
+	}
+	return nil
+}
+
 func SafeArchivePath(name string) bool {
 	if name == "" || strings.Contains(name, "\\") || strings.Contains(name, ":") || strings.ContainsRune(name, 0) || strings.HasPrefix(name, "/") {
 		return false
