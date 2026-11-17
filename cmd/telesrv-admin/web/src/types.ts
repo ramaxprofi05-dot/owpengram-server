@@ -477,7 +477,31 @@ export type PluginCatalogRow = {
   reviewed_at?: string;
 };
 
-export type PluginCatalogResponse = { rows: PluginCatalogRow[] };
+export type PluginPublisherRow = {
+  key_id: string;
+  label: string;
+  status: "active" | "revoked";
+  created_by: string;
+  created_at: string;
+  revoked_by: string;
+  revoked_at?: string;
+};
+
+export type PluginCatalogEventRow = {
+  id: number;
+  plugin_id: string;
+  version: string;
+  action: "submitted" | "approved" | "rejected" | "disabled";
+  actor: string;
+  note: string;
+  created_at: string;
+};
+
+export type PluginCatalogResponse = {
+  rows: PluginCatalogRow[];
+  publishers: PluginPublisherRow[];
+  events: PluginCatalogEventRow[];
+};
 
 export type CollectibleUsernameStatus = "vault" | "owned" | "burned";
 
