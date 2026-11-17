@@ -7,7 +7,7 @@ func TestUserVisibleTextRebrandsWordsAndOfficialHosts(t *testing.T) {
 		"Telegram telegram TELEGRAM Telegram-like https://translations.telegram.org/en t.me/example desktop.telegram.org",
 		"https://chat.example/root/",
 	)
-	want := "OwpenGram OwpenGram OwpenGram OwpenGram-like https://chat.example/root/en chat.example/example chat.example"
+	want := "FemboyGram FemboyGram FemboyGram FemboyGram-like https://chat.example/root/en chat.example/example chat.example"
 	if got != want {
 		t.Fatalf("UserVisibleText() = %q, want %q", got, want)
 	}
@@ -40,7 +40,7 @@ func TestUserVisibleTextRebrandsBareOfficialHostsWithoutTouchingDottedIdentifier
 
 func TestUserVisibleTextRebrandsLocalizedProductNames(t *testing.T) {
 	got := UserVisibleText("Телеграмом تيليجرام تلگرام 텔레그램 טלגרם", "")
-	if want := "OwpenGram OwpenGram OwpenGram OwpenGram OwpenGram"; got != want {
+	if want := "FemboyGram FemboyGram FemboyGram FemboyGram FemboyGram"; got != want {
 		t.Fatalf("UserVisibleText() = %q, want %q", got, want)
 	}
 }
