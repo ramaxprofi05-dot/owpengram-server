@@ -457,6 +457,28 @@ export type ModerationReport = {
   CreatedAt: string;
 };
 
+export type PluginCatalogRow = {
+  id: string;
+  name: string;
+  version: string;
+  author: string;
+  description: string;
+  target: "android" | "server";
+  entrypoint: string;
+  permissions: string[];
+  sha256: string;
+  signer_key_id: string;
+  status: "pending" | "approved" | "disabled" | "rejected";
+  submitted_by: string;
+  reviewed_by: string;
+  review_note: string;
+  created_at: string;
+  updated_at: string;
+  reviewed_at?: string;
+};
+
+export type PluginCatalogResponse = { rows: PluginCatalogRow[] };
+
 export type CollectibleUsernameStatus = "vault" | "owned" | "burned";
 
 export type CollectiblePeerType = "" | "user" | "channel";
