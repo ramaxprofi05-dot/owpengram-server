@@ -204,4 +204,3 @@ func TestValidatePackageArchiveEnforcesEntryCountLimit(t *testing.T) {
 	}
 }
 
-}
