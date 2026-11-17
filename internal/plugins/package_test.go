@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -158,4 +159,48 @@ func TestValidatePackageArchiveRejectsUnsafeDuplicateAndSymlinkEntries(t *testin
 			}
 		})
 	}
+
+func TestValidatePackageArchiveRejectsMalformedAndManifestlessArchives(t *testing.T) {
+	if _, err := ValidatePackageArchive([]byte("not a zip archive"), nil); err == nil {
+		t.Fatal("malformed ZIP was accepted")
+	}
+
+	var empty bytes.Buffer
+	writer := zip.NewWriter(&empty)
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ValidatePackageArchive(empty.Bytes(), nil); err == nil {
+		t.Fatal("empty ZIP was accepted")
+	}
+
+	manifestless := makeArchiveWithEntries(t, []struct {
+		name string
+		mode fs.FileMode
+		body []byte
+	}{{name: "dist/main.js", body: []byte("export default {};")}})
+	if _, err := ValidatePackageArchive(manifestless, nil); err == nil {
+		t.Fatal("archive without root manifest.json was accepted")
+	}
+}
+
+func TestValidatePackageArchiveEnforcesEntryCountLimit(t *testing.T) {
+	entries := make([]struct {
+		name string
+		mode fs.FileMode
+		body []byte
+	}, MaxPackageFiles+1)
+	for i := range entries {
+		entries[i] = struct {
+			name string
+			mode fs.FileMode
+			body []byte
+		}{name: fmt.Sprintf("assets/%03d.bin", i), body: []byte{byte(i)}}
+	}
+	archive := makeArchiveWithEntries(t, entries)
+	if _, err := ValidatePackageArchive(archive, nil); err == nil {
+		t.Fatalf("archive with %d entries exceeded limit %d but was accepted", len(entries), MaxPackageFiles)
+	}
+}
+
 }
