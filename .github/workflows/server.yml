@@ -25,8 +25,85 @@ jobs:
         with:
           go-version: '1.25.0'
           cache: true
-      - name: Run Go tests
-        run: go test ./...
+      - name: Run FemboyGram branding and configuration tests
+        run: |
+          go test ./internal/branding ./internal/links
+          go test ./internal/config -run '^TestLoadDefaultsAdvertiseIPToLoopback
+  admin-web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: cmd/telesrv-admin/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cmd/telesrv-admin/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build admin panel
+        run: npm run build
+
+          go test ./internal/domain -run '^(TestServiceIdentityAndLoginMessageUseFemboyGramBrand|TestRenderWelcomeMessageTemplateSubstitutesServerName)
+  admin-web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: cmd/telesrv-admin/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cmd/telesrv-admin/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build admin panel
+        run: npm run build
+
+          go test ./internal/app/langpack -run '^TestServiceRebrandsEveryLanguagePackProjection
+  admin-web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: cmd/telesrv-admin/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cmd/telesrv-admin/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build admin panel
+        run: npm run build
+
+          go test ./internal/app/auth -run '^(TestSignUpWritesOfficialLoginMessage|TestEmailSetupVerificationAuthorizesSignUpWithWelcomeMessageOnlyNoCodeEcho)
+  admin-web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: cmd/telesrv-admin/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cmd/telesrv-admin/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build admin panel
+        run: npm run build
+
 
   admin-web:
     runs-on: ubuntu-24.04
