@@ -58,6 +58,9 @@ func TestParseManifestRejectsUnknownFieldsAndTrailingJSON(t *testing.T) {
 	if _, err := ParseManifest([]byte(base + base)); err == nil {
 		t.Fatal("trailing JSON object was accepted")
 	}
+	if _, err := ParseManifest([]byte(base + " trailing")); err == nil {
+		t.Fatal("trailing non-JSON data was accepted")
+	}
 }
 
 func TestValidateInstallableManifestRequiresIntegrityMetadata(t *testing.T) {
