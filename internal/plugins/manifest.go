@@ -2,8 +2,10 @@ package plugins
 
 import (
 	"bytes"
-	"encoding/base64"
 	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -262,6 +264,21 @@ func ValidateInstallableManifest(m Manifest) error {
 	}
 	if m.SignerKeyID == "" || m.Signature == "" {
 		return errors.New("installable plugin requires a signer key id and signature")
+	}
+	return nil
+}
+
+// VerifyPackageDigest binds the signed manifest to the exact package bytes.
+ // Call this before extracting or installing an archive; a valid manifest
+ // signature alone does not prove that the downloaded package matches it.
+func VerifyPackageDigest(m Manifest, packageBytes []byte) error {
+	if err := ValidateInstallableManifest(m); err != nil {
+		return err
+	}
+	sum := sha256.Sum256(packageBytes)
+	actual := hex.EncodeToString(sum[:])
+	if actual != m.SHA256 {
+		return errors.New("plugin package SHA-256 does not match its signed manifest")
 	}
 	return nil
 }
