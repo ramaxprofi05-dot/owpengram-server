@@ -1,6 +1,8 @@
 package plugins
 
 import (
+	"crypto/ed25519"
+	"crypto/rand"
 	"encoding/base64"
 	"strings"
 	"testing"
@@ -86,5 +88,36 @@ func TestSafeArchivePathRejectsZipSlip(t *testing.T) {
 		if !SafeArchivePath(name) {
 			t.Fatalf("safe archive path %q rejected", name)
 		}
+	}
+}
+
+
+func TestVerifyManifestSignatureRequiresTrustedPublisherAndExactPayload(t *testing.T) {
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatalf("generate signing key: %v", err)
+	}
+
+	m := validManifest()
+	m.SHA256 = strings.Repeat("b", 64)
+	m.SignerKeyID = "femboygram-test-key"
+	payload, err := SigningPayload(m)
+	if err != nil {
+		t.Fatalf("SigningPayload: %v", err)
+	}
+	m.Signature = base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, payload))
+
+	trusted := map[string]ed25519.PublicKey{m.SignerKeyID: publicKey}
+	if err := VerifyManifestSignature(m, trusted); err != nil {
+		t.Fatalf("valid trusted signature rejected: %v", err)
+	}
+	if err := VerifyManifestSignature(m, nil); err == nil {
+		t.Fatal("signature from an unknown publisher was accepted")
+	}
+
+	tampered := m
+	tampered.Description = "A different package description"
+	if err := VerifyManifestSignature(tampered, trusted); err == nil {
+		t.Fatal("manifest changed after signing was accepted")
 	}
 }
