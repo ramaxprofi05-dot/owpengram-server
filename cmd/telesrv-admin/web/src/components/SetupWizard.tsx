@@ -175,7 +175,7 @@ function IdentityStep({ onNext }: { onNext: () => void }) {
           </button>
         </div>
         <div className="server-identity-fields">
-          <label className="form-field"><span>{"Name"}</span><input value={name} maxLength={128} placeholder={"OwpenGram"} disabled={!loaded} onChange={(event) => setName(event.target.value)} /></label>
+          <label className="form-field"><span>{"Name"}</span><input value={name} maxLength={128} placeholder={"FemboyGram"} disabled={!loaded} onChange={(event) => setName(event.target.value)} /></label>
           <label className="form-field"><span>{"Description"}</span><textarea rows={2} value={description} maxLength={512} disabled={!loaded} onChange={(event) => setDescription(event.target.value)} /></label>
         </div>
       </div>
