@@ -68,7 +68,7 @@ func TestValidatePackageArchiveRejectsUntrustedOrTamperedPackage(t *testing.T) {
 	}
 	trusted := map[string]ed25519.PublicKey{manifest.SignerKeyID: publicKey}
 
-	tampered, _, _ := signedTestArchive(t, "dist/main.js", []byte("export default {};"))
+	tampered := append([]byte(nil), data...)
 	// Change a byte in the stored entrypoint while leaving its signed digest intact.
 	index := bytes.Index(tampered, []byte("export default {};"))
 	if index < 0 {
