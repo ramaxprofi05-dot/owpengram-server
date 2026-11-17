@@ -22,8 +22,8 @@ func TestLoadDefaultsAdvertiseIPToLoopback(t *testing.T) {
 	if cfg.AdvertiseIP != "127.0.0.1" {
 		t.Fatalf("AdvertiseIP = %q, want loopback default", cfg.AdvertiseIP)
 	}
-	if cfg.PublicBaseURL != "https://owpengram.org" {
-		t.Fatalf("PublicBaseURL = %q, want https://owpengram.org", cfg.PublicBaseURL)
+	if cfg.PublicBaseURL != "http://127.0.0.1:2401" {
+		t.Fatalf("PublicBaseURL = %q, want local-only FemboyGram default", cfg.PublicBaseURL)
 	}
 	if cfg.PublicAppScheme != "owpg" {
 		t.Fatalf("PublicAppScheme = %q, want owpg", cfg.PublicAppScheme)
@@ -31,11 +31,11 @@ func TestLoadDefaultsAdvertiseIPToLoopback(t *testing.T) {
 	if cfg.PublicAppLinkBase != "" {
 		t.Fatalf("PublicAppLinkBase = %q, want disabled", cfg.PublicAppLinkBase)
 	}
-	if cfg.PublicWebBaseURL != "https://weba.owpengram.org" {
-		t.Fatalf("PublicWebBaseURL = %q, want https://weba.owpengram.org", cfg.PublicWebBaseURL)
+	if cfg.PublicWebBaseURL != "" {
+		t.Fatalf("PublicWebBaseURL = %q, want disabled until FemboyGram has a domain", cfg.PublicWebBaseURL)
 	}
-	if cfg.PublicAppName != "OwpenGram" {
-		t.Fatalf("PublicAppName = %q, want OwpenGram", cfg.PublicAppName)
+	if cfg.PublicAppName != "FemboyGram" {
+		t.Fatalf("PublicAppName = %q, want FemboyGram", cfg.PublicAppName)
 	}
 	if cfg.CallRegistryMaxEntries != 10_000 {
 		t.Fatalf("CallRegistryMaxEntries = %d, want 10000", cfg.CallRegistryMaxEntries)
