@@ -33,16 +33,22 @@ export function PluginsPage() {
   const counts = useMemo(() => ({
     total: rows.length,
     pending: rows.filter((row) => row.status === "pending").length,
-    approved: rows.filter((row) => row.status === "approved").length
+    approved: rows.filter((row) => row.status === "approved").length,
+    disabled: rows.filter((row) => row.status === "disabled").length,
+    rejected: rows.filter((row) => row.status === "rejected").length
   }), [rows]);
 
   const columns: Column<PluginCatalogRow>[] = [
-    { key: "name", label: "Plugin", sortValue: (row) => row.name.toLowerCase(), render: (row) => <div><strong>{row.name}</strong><div className="muted mono">{row.id}</div></div> },
+    { key: "name", label: "Plugin", sortValue: (row) => row.name.toLowerCase(), render: (row) => <div><strong>{row.name}</strong><div className="muted mono">{row.id}</div><div className="muted">{row.description}</div></div> },
     { key: "version", label: "Version", sortValue: (row) => row.version, render: (row) => <span className="mono">{row.version}</span> },
     { key: "target", label: "Target", render: (row) => <Badge>{row.target === "android" ? "Android" : "Server"}</Badge> },
     { key: "publisher", label: "Publisher", sortValue: (row) => row.author.toLowerCase(), render: (row) => <div>{row.author}<div className="muted mono">{row.signer_key_id}</div></div> },
+    { key: "entrypoint", label: "Entrypoint", render: (row) => <span className="mono">{row.entrypoint}</span> },
     { key: "permissions", label: "Permissions", render: (row) => <span>{row.permissions?.length ? row.permissions.join(", ") : "None"}</span> },
-    { key: "status", label: "Review", render: (row) => <PluginStatus status={row.status} /> }
+    { key: "digest", label: "Package SHA-256", render: (row) => <span className="mono" title={row.sha256}>{row.sha256.slice(0, 16)}…</span> },
+    { key: "submitted", label: "Submitted by", render: (row) => <span>{row.submitted_by || "—"}</span> },
+    { key: "review", label: "Review", render: (row) => <div><PluginStatus status={row.status} /><div className="muted">{row.reviewed_by || "Not reviewed"}</div>{row.review_note && <div>{row.review_note}</div>}</div> },
+    { key: "updated", label: "Updated", sortValue: (row) => row.updated_at, render: (row) => <span>{new Date(row.updated_at).toLocaleString()}</span> }
   ];
 
   return (
@@ -56,9 +62,11 @@ export function PluginsPage() {
         <Metric label={"Packages"} value={String(counts.total)} />
         <Metric label={"Pending review"} value={String(counts.pending)} tone={counts.pending > 0 ? "warn" : undefined} />
         <Metric label={"Approved"} value={String(counts.approved)} tone="good" />
+        <Metric label={"Disabled"} value={String(counts.disabled)} />
+        <Metric label={"Rejected"} value={String(counts.rejected)} />
       </div>
       <Alert>
-        {"Catalog foundation is active. Packages are stored as inert signed archives; approval does not execute code. Runtime loading stays disabled until the sandbox and capability grants are implemented."}
+        {"Read-only catalog view: package metadata, digest, submitter, and review notes are visible. Upload, publisher-key management, and approve/reject actions are not exposed yet. Packages remain inert; approval does not execute code, and runtime loading stays disabled until the sandbox and capability broker are implemented."}
       </Alert>
       <DataTable
         columns={columns}
