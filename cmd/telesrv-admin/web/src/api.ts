@@ -1,5 +1,6 @@
 import type {
   PublicBranding,
+  PluginCatalogResponse,
   AdminConsoleUserList,
   AccountDetail,
   AccountListResponse,
@@ -198,6 +199,7 @@ export const api = {
   bots: (params: URLSearchParams) => request<BotListResponse>(`/api/bots?${params.toString()}`),
   broadcasts: (params: URLSearchParams) => request<BroadcastListResponse>(`/api/broadcasts?${params.toString()}`),
   bot: (id: number) => request<BotDetail>(`/api/bots/${id}`),
+  plugins: () => request<PluginCatalogResponse>("/api/plugins"),
   collectibleUsernames: (params: URLSearchParams) =>
     request<CollectibleUsernameListResponse>(`/api/collectible-usernames?${params.toString()}`),
   collectibleUsername: (id: string) =>
