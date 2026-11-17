@@ -18,7 +18,8 @@ func signedTestArchive(t *testing.T, entryName string, entrypoint []byte) ([]byt
 	}
 	m := validManifest()
 	m.Entrypoint = entryName
-	m.SHA256 = PackageContentSHA256(map[string][]byte{entryName: entrypoint})
+	assets := []byte("plugin icon asset")
+	m.SHA256 = PackageContentSHA256(map[string][]byte{entryName: entrypoint, "assets/icon.bin": assets})
 	m.SignerKeyID = "femboygram-test-key"
 	payload, err := SigningPayload(m)
 	if err != nil {
@@ -32,7 +33,7 @@ func signedTestArchive(t *testing.T, entryName string, entrypoint []byte) ([]byt
 
 	var buffer bytes.Buffer
 	writer := zip.NewWriter(&buffer)
-	for name, body := range map[string][]byte{pluginManifestName: manifestBytes, entryName: entrypoint} {
+	for name, body := range map[string][]byte{pluginManifestName: manifestBytes, entryName: entrypoint, "assets/icon.bin": assets} {
 		part, err := writer.CreateHeader(&zip.FileHeader{Name: name, Method: zip.Store})
 		if err != nil {
 			t.Fatal(err)
@@ -74,6 +75,16 @@ func TestValidatePackageArchiveRejectsUntrustedOrTamperedPackage(t *testing.T) {
 	tampered[index] ^= 1
 	if _, err := ValidatePackageArchive(tampered, trusted); err == nil {
 		t.Fatal("modified entrypoint was accepted")
+	}
+
+	assetTampered := append([]byte(nil), data...)
+	assetIndex := bytes.Index(assetTampered, []byte("plugin icon asset"))
+	if assetIndex < 0 {
+		t.Fatal("test asset not found in archive")
+	}
+	assetTampered[assetIndex] ^= 1
+	if _, err := ValidatePackageArchive(assetTampered, trusted); err == nil {
+		t.Fatal("modified non-entrypoint asset was accepted")
 	}
 }
 
