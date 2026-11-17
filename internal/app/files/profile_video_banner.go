@@ -13,7 +13,7 @@ import (
 // media/blob pipeline; this service only manages the durable association.
 func (s *Service) SetProfileVideoBanner(ctx context.Context, ownerUserID, documentID int64) (domain.ProfileVideoBanner, error) {
 	if s == nil || s.media == nil || ownerUserID <= 0 || documentID <= 0 {
-		return domain.ProfileVideoBanner{}, domain.ErrInvalidInput
+		return domain.ProfileVideoBanner{}, domain.ErrDocumentInvalid
 	}
 	banner, err := s.media.SetProfileVideoBanner(ctx, ownerUserID, documentID)
 	if err != nil {
@@ -21,7 +21,7 @@ func (s *Service) SetProfileVideoBanner(ctx context.Context, ownerUserID, docume
 		case errors.Is(err, store.ErrProfileVideoBannerDocumentNotFound),
 			errors.Is(err, store.ErrProfileVideoBannerNotOwned),
 			errors.Is(err, store.ErrProfileVideoBannerInvalidMedia):
-			return domain.ProfileVideoBanner{}, domain.ErrInvalidInput
+			return domain.ProfileVideoBanner{}, domain.ErrDocumentInvalid
 		default:
 			return domain.ProfileVideoBanner{}, err
 		}
@@ -31,14 +31,14 @@ func (s *Service) SetProfileVideoBanner(ctx context.Context, ownerUserID, docume
 
 func (s *Service) GetProfileVideoBanner(ctx context.Context, ownerUserID int64) (domain.ProfileVideoBanner, bool, error) {
 	if s == nil || s.media == nil || ownerUserID <= 0 {
-		return domain.ProfileVideoBanner{}, false, domain.ErrInvalidInput
+		return domain.ProfileVideoBanner{}, false, domain.ErrDocumentInvalid
 	}
 	return s.media.GetProfileVideoBanner(ctx, ownerUserID)
 }
 
 func (s *Service) DeleteProfileVideoBanner(ctx context.Context, ownerUserID int64) error {
 	if s == nil || s.media == nil || ownerUserID <= 0 {
-		return domain.ErrInvalidInput
+		return domain.ErrDocumentInvalid
 	}
 	return s.media.DeleteProfileVideoBanner(ctx, ownerUserID)
 }
