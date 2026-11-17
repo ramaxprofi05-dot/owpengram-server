@@ -84,6 +84,7 @@ func TestParseManifestRejectsDuplicateJSONKeys(t *testing.T) {
 		data string
 	}{
 		{"duplicate top-level field", strings.Replace(base, `"name":"Weather"`, `"name":"Weather","name":"Overridden"`, 1)},
+		{"escaped duplicate top-level field", strings.Replace(base, `"name":"Weather"`, `"name":"Weather","\\u006eame":"Overridden"`, 1)},
 		{"duplicate nested field", `{"id":"dev.example.weather","name":"Weather","version":"1.0.0","author":"Example","description":"Weather card","target":"android","entrypoint":"main.js","permissions":[],"metadata":{"x":1,"x":2}}`},
 		{"multiple top-level values", base + ` {}`},
 	}
