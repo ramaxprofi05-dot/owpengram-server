@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // ProfileVideoBanner is the persisted association between a user profile and
 // an already-uploaded video document. The media bytes remain in MediaStore's
@@ -25,7 +28,7 @@ func (d Document) IsProfileVideoBanner() bool {
 		d.Size <= 0 || d.Size > MaxProfileVideoBannerBytes {
 		return false
 	}
-	if d.MimeType != "video/mp4" {
+	if !strings.EqualFold(strings.TrimSpace(d.MimeType), "video/mp4") {
 		return false
 	}
 	for _, attr := range d.Attributes {
