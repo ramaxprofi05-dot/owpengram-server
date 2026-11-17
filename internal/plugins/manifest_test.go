@@ -2,10 +2,10 @@ package plugins
 
 import (
 	"crypto/ed25519"
-	"crypto/sha256"
-	"encoding/hex"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"strings"
 	"testing"
 )
