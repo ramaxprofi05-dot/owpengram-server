@@ -35,16 +35,16 @@ type Config struct {
 
 var (
 	defaultConfig = Config{
-		ProductName:     "OwpenGram",
-		ProductUsername: "owpengram",
-		DesktopAppName:  "OwpenGram Desktop",
-		AndroidAppName:  "OwpenGram Android",
-		IOSAppName:      "OwpenGram iOS",
-		MacOSAppName:    "OwpenGram macOS",
-		WebAAppName:     "OwpenGram Web A",
-		WebKAppName:     "OwpenGram Web K",
-		PremiumName:     "OwpenGram Premium",
-		StarsName:       "OwpenGram Stars",
+		ProductName:     "FemboyGram",
+		ProductUsername: "femboygram",
+		DesktopAppName:  "FemboyGram Desktop",
+		AndroidAppName:  "FemboyGram Android",
+		IOSAppName:      "FemboyGram iOS",
+		MacOSAppName:    "FemboyGram macOS",
+		WebAAppName:     "FemboyGram Web A",
+		WebKAppName:     "FemboyGram Web K",
+		PremiumName:     "FemboyGram Premium",
+		StarsName:       "FemboyGram Stars",
 		PublicBaseURL:   links.DefaultDownloadURL,
 	}
 	configured atomic.Pointer[Config]
