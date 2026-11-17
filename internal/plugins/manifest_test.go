@@ -3,9 +3,7 @@ package plugins
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"strings"
 	"testing"
 )
@@ -112,48 +110,29 @@ func TestValidateInstallableManifestRequiresIntegrityMetadata(t *testing.T) {
 	}
 }
 
-func TestVerifyPackageDigestBindsManifestToExactArchive(t *testing.T) {
-	archive := []byte("signed plugin archive")
-	sum := sha256.Sum256(archive)
-	m := validManifest()
-	m.SHA256 = hex.EncodeToString(sum[:])
-	m.SignerKeyID = "femboygram-test-key"
-	m.Signature = base64.StdEncoding.EncodeToString(make([]byte, 64))
+func TestVerifyPluginPackageUsesArchiveContentDigestAndTrustedSignature(t *testing.T) {
+	archive, publicKey, manifest := signedTestArchive(t, "dist/main.js", []byte("export default {};"))
+	trusted := map[string]ed25519.PublicKey{manifest.SignerKeyID: publicKey}
 
-	if err := VerifyPackageDigest(m, archive); err != nil {
-		t.Fatalf("matching archive rejected: %v", err)
-	}
-	if err := VerifyPackageDigest(m, []byte("modified plugin archive")); err == nil {
-		t.Fatal("archive with a different digest was accepted")
-	}
-}
-
-func TestVerifyPluginPackageRequiresMatchingArchiveAndTrustedSignature(t *testing.T) {
-	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	got, err := VerifyPluginPackage(archive, trusted)
 	if err != nil {
-		t.Fatalf("generate signing key: %v", err)
-	}
-
-	archive := []byte("complete signed plugin archive")
-	sum := sha256.Sum256(archive)
-	m := validManifest()
-	m.SHA256 = hex.EncodeToString(sum[:])
-	m.SignerKeyID = "femboygram-test-key"
-	payload, err := SigningPayload(m)
-	if err != nil {
-		t.Fatalf("SigningPayload: %v", err)
-	}
-	m.Signature = base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, payload))
-	trusted := map[string]ed25519.PublicKey{m.SignerKeyID: publicKey}
-
-	if err := VerifyPluginPackage(m, archive, trusted); err != nil {
 		t.Fatalf("valid package rejected: %v", err)
 	}
-	if err := VerifyPluginPackage(m, []byte("tampered archive"), trusted); err == nil {
-		t.Fatal("tampered archive was accepted")
+	if got.ID != manifest.ID || got.SHA256 != manifest.SHA256 {
+		t.Fatalf("unexpected verified manifest: %#v", got)
 	}
-	if err := VerifyPluginPackage(m, archive, nil); err == nil {
+	if _, err := VerifyPluginPackage(archive, nil); err == nil {
 		t.Fatal("package signed by an untrusted publisher was accepted")
+	}
+
+	tampered := append([]byte(nil), archive...)
+	index := bytes.Index(tampered, []byte("export default {};"))
+	if index < 0 {
+		t.Fatal("test entrypoint not found in archive")
+	}
+	tampered[index] ^= 1
+	if _, err := VerifyPluginPackage(tampered, trusted); err == nil {
+		t.Fatal("package with modified entrypoint was accepted")
 	}
 }
 
