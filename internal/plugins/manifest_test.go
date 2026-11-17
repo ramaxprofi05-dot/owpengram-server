@@ -77,6 +77,25 @@ func TestParseManifestRejectsUnknownFieldsAndTrailingJSON(t *testing.T) {
 	}
 }
 
+func TestParseManifestRejectsDuplicateJSONKeys(t *testing.T) {
+	base := `{"id":"dev.example.weather","name":"Weather","version":"1.0.0","author":"Example","description":"Weather card","target":"android","entrypoint":"main.js","permissions":[]}`
+	cases := []struct {
+		name string
+		data string
+	}{
+		{"duplicate top-level field", strings.Replace(base, `"name":"Weather"`, `"name":"Weather","name":"Overridden"`, 1)},
+		{"duplicate nested field", `{"id":"dev.example.weather","name":"Weather","version":"1.0.0","author":"Example","description":"Weather card","target":"android","entrypoint":"main.js","permissions":[],"metadata":{"x":1,"x":2}}`},
+		{"multiple top-level values", base + ` {}`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, err := ParseManifest([]byte(tc.data)); err == nil {
+				t.Fatal("ambiguous JSON was accepted")
+			}
+		})
+	}
+}
+
 func TestValidateInstallableManifestRequiresIntegrityMetadata(t *testing.T) {
 	m := validManifest()
 	if err := ValidateInstallableManifest(m); err == nil {
