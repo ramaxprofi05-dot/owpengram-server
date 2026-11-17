@@ -28,6 +28,7 @@ jobs:
       - name: Run FemboyGram branding and configuration tests
         run: |
           go test ./internal/branding ./internal/links ./internal/plugins
+          go test ./internal/rpc -run TestFemboyGram
           go test ./internal/config -run TestLoadDefaultsAdvertiseIPToLoopback
           go test ./internal/domain -run 'TestServiceIdentityAndLoginMessageUseFemboyGramBrand|TestRenderWelcomeMessageTemplateSubstitutesServerName'
           go test ./internal/app/langpack -run TestServiceRebrandsEveryLanguagePackProjection
