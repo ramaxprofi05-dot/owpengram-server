@@ -49,6 +49,10 @@ type MediaStore interface {
 	// 文档 / 照片注册表。
 	PutDocument(ctx context.Context, doc domain.Document) error
 	GetDocument(ctx context.Context, id int64) (domain.Document, bool, error)
+	// Profile video banners reference validated documents owned by the profile user.
+	SetProfileVideoBanner(ctx context.Context, ownerUserID, documentID int64) (domain.ProfileVideoBanner, error)
+	GetProfileVideoBanner(ctx context.Context, ownerUserID int64) (domain.ProfileVideoBanner, bool, error)
+	DeleteProfileVideoBanner(ctx context.Context, ownerUserID int64) error
 	GetDocuments(ctx context.Context, ids []int64) ([]domain.Document, error)
 	PutPhoto(ctx context.Context, photo domain.Photo) error
 	GetPhoto(ctx context.Context, id int64) (domain.Photo, bool, error)
