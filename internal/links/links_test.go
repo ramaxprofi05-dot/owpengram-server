@@ -13,7 +13,7 @@ func TestNormalizeBaseURL(t *testing.T) {
 		want string
 	}{
 		{name: "default", raw: "", want: "http://127.0.0.1:2401"},
-		{name: "host only", raw: "127.0.0.1:2401/", want: "http://127.0.0.1:2401"},
+		{name: "host only", raw: "127.0.0.1:2401/", want: "https://127.0.0.1:2401"},
 		{name: "local http", raw: "http://127.0.0.1:2401/", want: "http://127.0.0.1:2401"},
 	}
 	for _, tt := range tests {
