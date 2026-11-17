@@ -337,34 +337,10 @@ func (r *Router) onPaymentsGetStarGifts(ctx context.Context, hash int) (tg.Payme
 	// appear through saved-gift and profile RPCs.
 	return &tg.PaymentsStarGifts{Gifts: []tg.StarGiftClass{}, Chats: []tg.ChatClass{}, Users: []tg.UserClass{}}, nil
 }
-	catalogHash, err := r.deps.Gifts.CatalogHash(ctx)
-	if err != nil {
-		return nil, internalErr()
-	}
-	catalog, err := r.deps.Gifts.Catalog(ctx)
-	if err != nil {
-		return nil, internalErr()
-	}
-	// 刻意不返回 starGiftsNotModified：目录只有少量静态礼物，而 DrKLO 在 force-stop/重装后
-	// 会保留 catalog hash 但丢失礼物缓存——一旦命中 hash 返回 NotModified，送礼选择器就永远空。
-	// 始终回完整目录（带宽可忽略），保证客户端无论缓存状态都能渲染礼物网格。
-	_ = catalogHash
-	return &tg.PaymentsStarGifts{
-		Hash:  catalogHash,
-		Gifts: tgStarGifts(catalog),
-		Chats: []tg.ChatClass{},
-		Users: []tg.UserClass{},
-	}, nil
-}
 
-// onPaymentsGetPaymentForm 处理 Stars 专用 invoice：
-//   - inputInvoiceStarGift 返回 paymentFormStarGift。
-//   - inputInvoiceStars(top-up/gift/giveaway) 返回普通 test paymentForm，由本地 dev
-//     provider WebView 生成 form-bound credentials 后走 sendPaymentForm。
-//
-// 崩溃约束：star gift invoice 必须返 paymentFormStarGift#b425cfe1（TDesktop 单分支 match），
-// Stars 法币购买表单 Invoice.Prices 必须非空且保持套餐 currency/amount；不能返回
-// paymentFormStars，否则 TDesktop 会把它解释为花现有 XTR，Android 会打开空 URL WebView。
+// onPaymentsGetPaymentForm rejects paid gift lifecycle invoices and exposes no
+// fiat top-up/gift checkout. The audited admin grant service is the only gift
+// issuance path in FemboyGram.
 func (r *Router) onPaymentsGetPaymentForm(ctx context.Context, req *tg.PaymentsGetPaymentFormRequest) (tg.PaymentsPaymentFormClass, error) {
 	if req == nil {
 		return nil, inputRequestInvalidErr()
