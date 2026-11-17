@@ -152,7 +152,7 @@ func ValidateInstallableManifest(m Manifest) error {
 }
 
 func SafeArchivePath(name string) bool {
-	if name == "" || strings.Contains(name, "\\") || strings.HasPrefix(name, "/") {
+	if name == "" || strings.Contains(name, "\\") || strings.Contains(name, ":") || strings.ContainsRune(name, 0) || strings.HasPrefix(name, "/") {
 		return false
 	}
 	clean := path.Clean(name)
