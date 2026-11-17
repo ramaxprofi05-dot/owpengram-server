@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"strings"
 	"testing"
 )
 
@@ -81,24 +80,9 @@ func TestValidatePackageArchiveRejectsUntrustedOrTamperedPackage(t *testing.T) {
 	}
 }
 
-func TestValidatePackageArchiveRejectsUnsafePathsAndMissingEntrypoint(t *testing.T) {
+func TestValidatePackageArchiveRejectsUnsafePaths(t *testing.T) {
 	data, publicKey, manifest := signedTestArchive(t, "../main.js", []byte("payload"))
 	if _, err := ValidatePackageArchive(data, map[string]ed25519.PublicKey{manifest.SignerKeyID: publicKey}); err == nil {
 		t.Fatal("path traversal entrypoint was accepted")
 	}
-
-	data, publicKey, manifest = signedTestArchive(t, "dist/main.js", []byte("payload"))
-	// Corrupt the signed manifest's declared entrypoint so the archive cannot
-	// provide the required file, without relying on an unsigned manifest.
-	manifest.Entrypoint = "dist/missing.js"
-	payload, err := SigningPayload(manifest)
-	if err != nil {
-		t.Fatal(err)
-	}
-	privateKey := make(ed25519.PrivateKey, ed25519.PrivateKeySize)
-	copy(privateKey[ed25519.SeedSize:], publicKey)
-	_ = payload
-	_ = strings.Builder{} // keep test imports focused on archive behavior
-	_ = data
-	_ = privateKey
 }
