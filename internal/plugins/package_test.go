@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"archive/zip"
+	"io/fs"
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
@@ -88,3 +89,73 @@ func TestValidatePackageArchiveRejectsUntrustedOrTamperedPackage(t *testing.T) {
 	}
 }
 
+func makeArchiveWithEntries(t *testing.T, entries []struct {
+	name string
+	mode fs.FileMode
+	body []byte
+}) []byte {
+	t.Helper()
+	var buffer bytes.Buffer
+	writer := zip.NewWriter(&buffer)
+	for _, entry := range entries {
+		header := &zip.FileHeader{Name: entry.name, Method: zip.Store}
+		if entry.mode != 0 {
+			header.SetMode(entry.mode)
+		}
+		part, err := writer.CreateHeader(header)
+		if err != nil {
+			t.Fatalf("create archive entry %q: %v", entry.name, err)
+		}
+		if _, err := part.Write(entry.body); err != nil {
+			t.Fatalf("write archive entry %q: %v", entry.name, err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("close archive: %v", err)
+	}
+	return buffer.Bytes()
+}
+
+func TestValidatePackageArchiveRejectsUnsafeDuplicateAndSymlinkEntries(t *testing.T) {
+	cases := []struct {
+		name    string
+		entries []struct {
+			name string
+			mode fs.FileMode
+			body []byte
+		}
+	}{
+		{
+			name: "zip slip",
+			entries: []struct {
+				name string
+				mode fs.FileMode
+				body []byte
+			}{{name: "../escape", body: []byte("x")}},
+		},
+		{
+			name: "duplicate path",
+			entries: []struct {
+				name string
+				mode fs.FileMode
+				body []byte
+			}{{name: "dist/main.js", body: []byte("one")}, {name: "dist/main.js", body: []byte("two")}},
+		},
+		{
+			name: "symbolic link",
+			entries: []struct {
+				name string
+				mode fs.FileMode
+				body []byte
+			}{{name: "dist/main.js", mode: fs.ModeSymlink | 0o777, body: []byte("../outside")}},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			archive := makeArchiveWithEntries(t, tc.entries)
+			if _, err := ValidatePackageArchive(archive, nil); err == nil {
+				t.Fatal("unsafe archive was accepted")
+			}
+		})
+	}
+}
