@@ -19,9 +19,8 @@ import (
 	"telesrv/internal/domain"
 )
 
-// Star gift（payments.* 礼物 RPC）：目录 / 购买表单 / 发送 / 收礼列表 / 展示切换 / 转换回 Stars。
-// 扣费经原子礼物聚合账本；用户礼物走私聊服务消息，频道礼物落 saved gift/admin log，
-// 并由持久 notification job 向启用通知的礼物管理员投递私聊 service message。
+// Star gift（payments.* 礼物 RPC）：接收礼物、收藏展示和管理员发放。
+// FemboyGram 不提供用户付费购买、转售或升级礼物；管理员发放走独立审计路径。
 
 func starGiftInvalidErr() error { return tgerr.New(400, "STARGIFT_INVALID") }
 
@@ -330,7 +329,8 @@ func (r *Router) starsGiveawayPaymentForm(ctx context.Context, buyerUserID int64
 		[]domain.User{domain.OfficialSystemUser()}), nil
 }
 
-// onPaymentsGetStarGifts 返回可购买礼物目录（hash 命中返回 NotModified）。
+// onPaymentsGetStarGifts keeps the public purchase catalog empty; received gifts
+// remain visible through saved-gift and profile RPCs.
 func (r *Router) onPaymentsGetStarGifts(ctx context.Context, hash int) (tg.PaymentsStarGiftsClass, error) {
 	// FemboyGram gift catalog entries are administered and granted by staff.
 	// The public MTProto purchase catalog stays empty; received gifts still
@@ -489,7 +489,7 @@ func (r *Router) onPaymentsValidateRequestedInfo(ctx context.Context, req *tg.Pa
 	if req == nil || req.Invoice == nil {
 		return nil, inputRequestInvalidErr()
 	}
-	// The forms returned by devStarsFiatPaymentForm request no personal data.
+	// Legacy checkout forms are unreachable while FemboyGram purchase options remain disabled.
 	// Reject even present-but-empty flags so a caller cannot make data appear
 	// validated when this module neither stores nor forwards it. Save is safe as
 	// a no-op only while the information object is exactly empty.
