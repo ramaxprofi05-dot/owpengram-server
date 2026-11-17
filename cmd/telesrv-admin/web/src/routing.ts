@@ -37,6 +37,7 @@ export const ROUTES: { prefix: string; title: string; section: string }[] = [
   { prefix: "/star-gift-catalog", title: "Gift catalog", section: "Economy" },
   { prefix: "/give-gifts", title: "Give gifts", section: "Economy" },
   { prefix: "/collectible-usernames", title: "Usernames", section: "Economy" },
+  { prefix: "/plugins", title: "Plugins", section: "Server" },
   { prefix: "/storage", title: "Storage", section: "Server" },
   { prefix: "/admin-users", title: "Operators", section: "Server" },
   { prefix: "/audit-log", title: "Audit log", section: "Server" },
