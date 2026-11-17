@@ -27,6 +27,18 @@ func TestValidateManifestAcceptsLeastPrivilegeManifest(t *testing.T) {
 	}
 }
 
+func TestValidateManifestAcceptsProfileBannerCapability(t *testing.T) {
+	m := validManifest()
+	m.Permissions = []string{"ui:profile", "ui:profile-banner"}
+	if err := ValidateManifest(m); err != nil {
+		t.Fatalf("profile banner capability should be allowed for Android: %v", err)
+	}
+	m.Target = TargetServer
+	if err := ValidateManifest(m); err == nil {
+		t.Fatal("Android profile banner capability must not be allowed for server plugins")
+	}
+}
+
 func TestValidateManifestRejectsUnsafeOrUnknownPermissions(t *testing.T) {
 	cases := []struct {
 		name string
