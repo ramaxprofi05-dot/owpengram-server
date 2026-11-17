@@ -1,42 +1,58 @@
-# Плагины FemboyGram — первый контракт
+# Плагины FemboyGram — текущий контракт
 
-Ветка femboygram содержит первый серверный слой plugin system: строгую схему manifest, проверку версии, target, entrypoint, permissions, checksum/signature metadata и защиту путей архива от zip-slip.
+Ветка `femboygram` содержит основу plugin system: строгую схему manifest, allowlist разрешений, проверку Ed25519-подписи, проверку содержимого ZIP-архива и страницу каталога в веб-админке.
 
-Это **ещё не готовый runtime или магазин**. Код плагинов пока не исполняется, пакеты не устанавливаются и подписи ещё не проверяются доверенным key registry. Эти шаги должны быть реализованы до включения каталога.
+Это **ещё не готовый runtime или магазин**. Каталог хранит метаданные и состояние проверки; безопасный запуск плагинов пока не реализован и должен оставаться выключенным.
 
 ## Манифест
 
 Обязательные поля:
-- id — reverse-domain ID, например dev.example.weather;
-- name, author, description;
-- version — SemVer;
-- target — android или server;
-- entrypoint — относительный путь внутри пакета;
-- permissions — только разрешения из allowlist для соответствующего target.
+- `id` — reverse-domain ID, например `dev.example.weather`;
+- `name`, `author`, `description`;
+- `version` — SemVer;
+- `target` — `android` или `server`;
+- `entrypoint` — относительный путь внутри пакета;
+- `permissions` — только разрешения из allowlist для соответствующего target.
 
-Для публикации/установки дополнительно обязательны sha256, signer_key_id и Ed25519 signature. Парсер проверяет формат подписи; будущий installer обязан криптографически проверить подпись по доверенному публичному ключу и сверить SHA-256 фактического архива.
+Для installable manifest дополнительно обязательны `sha256`, `signer_key_id` и Ed25519 `signature`. Подпись покрывает канонический JSON manifest без самого поля signature, включая signer key ID и package digest.
+
+## Формат пакета и digest
+
+Пакет — ZIP с корневым `manifest.json` и указанным в manifest entrypoint. `sha256` — SHA-256 не одного entrypoint, а всех файлов пакета, кроме `manifest.json`. Для каждого файла в лексикографическом порядке хешируются 8-байтовая big-endian длина UTF-8 пути, путь, 8-байтовая big-endian длина содержимого и само содержимое. Это делает digest независимым от ZIP compression и порядка записей и не допускает незаметную подмену дополнительных ресурсов.
+
+ZIP валидируется без распаковки на диск: ограничены размер архива, число файлов и общий распакованный объём; запрещены абсолютные пути, traversal, повторяющиеся имена и symlink. Подпись проверяется через явно переданный набор доверенных Ed25519 public keys. Неизвестный издатель и изменённый пакет отклоняются.
 
 ## Разрешения
 
 Android:
-- ui:chat-list, ui:chat-screen, ui:profile;
-- events:message-metadata, events:profile-public;
-- storage:plugin;
-- network:https.
+- `ui:chat-list`, `ui:chat-screen`, `ui:profile`;
+- `events:message-metadata`, `events:profile-public`;
+- `storage:plugin`;
+- `network:https`.
 
 Server:
-- server:message-metadata-hook, server:profile-public-hook;
-- storage:plugin;
-- network:https.
+- `server:message-metadata-hook`, `server:profile-public-hook`;
+- `storage:plugin`;
+- `network:https`.
 
 Разрешения на полный файловый доступ, токены, ключи сессий, секреты приложения, native code и административные операции не входят в allowlist. Плагины не должны получать прямой доступ к базе данных или MTProto auth keys.
 
-## Следующие обязательные этапы
-1. Реестр доверенных Ed25519 publisher keys и проверка подписи архива.
-2. ZIP/package importer с лимитами размера, количеством файлов, запретом symlink и проверкой каждого пути.
-3. Версионированный Plugin API и capability broker.
-4. Server runtime в WASM sandbox с лимитами памяти/CPU и сетевым allowlist.
-5. Android runtime через ограниченный IPC/JS bridge; никакого произвольного загрузчика DEX/JAR.
-6. Каталог, просмотр разрешений до установки, отключение, удаление, rollback и audit log.
+## Каталог и админ-панель
 
-До завершения этих этапов устанавливать сторонний исполняемый код нельзя.
+Миграция создаёт `plugin_catalog`: идентификатор и версия, метаданные, target, разрешения, digest, издатель, подпись, бинарный архив и статус review. Архивы не исполняются. API списка не раскрывает бинарные данные пакета. В веб-панели доступна страница **Server → Plugins** с перечнем, издателями, версиями, разрешениями и статусами.
+
+Права:
+- `plugins.read` — просмотр каталога;
+- `plugins.manage` — зарезервировано для управления издателями, загрузкой и review.
+
+## Следующие обязательные этапы
+
+1. Постоянный реестр доверенных Ed25519 publisher keys с безопасным добавлением/отзывом и аудитом.
+2. Upload/import API: проверка подписи и digest до сохранения, лимиты запроса, защита от повторной загрузки и аудит.
+3. Review workflow: approve/reject/disable, actor/reason, неизменяемая история изменений.
+4. Версионированный Plugin API и capability broker.
+5. Server runtime в WASM sandbox с лимитами памяти/CPU, таймаутами и сетевым allowlist.
+6. Android runtime через ограниченный IPC/JS bridge; никакого произвольного загрузчика DEX/JAR.
+7. Каталог клиента, просмотр разрешений до установки, отключение, удаление и rollback.
+
+До завершения этих этапов сторонний исполняемый код не запускается.
