@@ -121,6 +121,7 @@ func (s *server) routes() http.Handler {
 	mux.Handle("GET /api/messages/groups", s.scopedRoute(permissionMessagesRead, s.requireViewGrantForQuery("channel", "channel_id", s.handleGroupMessagesAPI)))
 	mux.Handle("GET /api/messages/groups/detail", s.scopedRoute(permissionMessagesRead, s.requireViewGrantForQuery("channel", "channel_id", s.handleGroupMessageDetailAPI)))
 	s.registerPrivateViewRoutes(mux)
+	mux.Handle("GET /api/plugins", s.scopedRoute(permissionPluginsRead, http.HandlerFunc(s.handlePluginsAPI)))
 	mux.Handle("GET /api/collectible-usernames", s.scopedRoute(permissionUsernamesRead, http.HandlerFunc(s.handleCollectibleUsernamesAPI)))
 	mux.Handle("GET /api/collectible-usernames/{id}", s.scopedRoute(permissionUsernamesRead, http.HandlerFunc(s.handleCollectibleUsernameDetailAPI)))
 	mux.Handle("GET /api/storage/stats", s.scopedRoute(permissionStorageRead, http.HandlerFunc(s.handleStorageStatsAPI)))
