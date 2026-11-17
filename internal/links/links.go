@@ -10,7 +10,7 @@ const (
 	DefaultPublicBaseURL = "https://owpengram.org"
 	DefaultWebBaseURL    = "https://weba.owpengram.org"
 	DefaultAppScheme     = "owpg"
-	DefaultAppName       = "OwpenGram"
+	DefaultAppName       = "FemboyGram"
 	DefaultDownloadURL   = "https://owpengram.org"
 )
 const MaxChatlistSlugBytes = 128
