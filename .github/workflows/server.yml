@@ -33,7 +33,9 @@ jobs:
           go test ./cmd/telesrv-admin -run "^$"
           go test ./internal/branding ./internal/links ./internal/plugins
           go test ./internal/rpc -run TestFemboyGram
+          go test ./internal/domain -run TestDocumentIsProfileVideoBanner
           go test ./internal/store/postgres -run TestProfileVideoBannerMediaReferences
+          go test ./internal/store/postgres -run 'TestProfileVideoBanner(MediaReferences|StoreValidatesOwnerAndMedia)'
           go test ./internal/config -run TestLoadDefaultsAdvertiseIPToLoopback
           go test ./internal/domain -run 'TestServiceIdentityAndLoginMessageUseFemboyGramBrand|TestRenderWelcomeMessageTemplateSubstitutesServerName'
           go test ./internal/app/langpack -run TestServiceRebrandsEveryLanguagePackProjection
