@@ -1299,7 +1299,7 @@ func Load() (Config, error) {
 
 		PremiumGrantMonths:        envIntOr("TELESRV_PREMIUM_GRANT_MONTHS", 3),
 		DefaultStickerSetID:       envInt64Or("TELESRV_DEFAULT_STICKER_SET_ID", 0),
-		PasskeyRPID:               envOr("TELESRV_PASSKEY_RP_ID", "owpengram.org"),
+		PasskeyRPID:               envOr("TELESRV_PASSKEY_RP_ID", "localhost"),
 		PasskeyAllowedOrigins:     envListOr("TELESRV_PASSKEY_ALLOWED_ORIGINS", nil),
 		StarsStartingGrant:        envInt64Or("TELESRV_STARS_STARTING_GRANT", 1000),
 		StarsMonthlyClaimAmount:   envInt64Or("TELESRV_STARS_MONTHLY_CLAIM_AMOUNT", 100),
