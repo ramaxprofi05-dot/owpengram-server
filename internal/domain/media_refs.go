@@ -23,6 +23,8 @@ const (
 	MediaRefKindProfilePhoto   MediaRefKind = "profile_photo"
 	MediaRefKindStickerSet     MediaRefKind = "sticker_set"
 	MediaRefKindGift           MediaRefKind = "gift"
+	// MediaRefKindProfileVideoBanner keeps a selected profile video banner alive independently of messages.
+	MediaRefKindProfileVideoBanner MediaRefKind = "profile_video_banner"
 )
 
 // MediaReference is one live pointer to a document/photo. GC (the storage
