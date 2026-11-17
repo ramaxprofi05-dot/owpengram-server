@@ -29,6 +29,14 @@ func TestProfileVideoBannerMediaReferences(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create banner owner: %v", err)
 	}
+	otherOwner, err := users.Create(ctx, domain.User{
+		AccessHash: 2,
+		Phone:      fmt.Sprintf("1999%d", suffix),
+		FirstName:  "OtherBannerOwner",
+	})
+	if err != nil {
+		t.Fatalf("create second banner owner: %v", err)
+	}
 
 	docA := int64(9_100_000_000_000_000_000 + suffix*2)
 	docB := docA + 1
@@ -44,7 +52,7 @@ func TestProfileVideoBannerMediaReferences(t *testing.T) {
 		}
 	}
 	t.Cleanup(func() {
-		_, _ = pool.Exec(context.Background(), "DELETE FROM users WHERE id = $1", owner.ID)
+		_, _ = pool.Exec(context.Background(), "DELETE FROM users WHERE id = ANY($1::bigint[])", []int64{owner.ID, otherOwner.ID})
 		_, _ = pool.Exec(context.Background(), "DELETE FROM documents WHERE id = ANY($1::bigint[])", []int64{docA, docB})
 	})
 
@@ -54,6 +62,13 @@ VALUES ($1, $2)`, owner.ID, docA); err != nil {
 		t.Fatalf("insert initial profile banner: %v", err)
 	}
 	assertProfileBannerReference(t, ctx, pool, owner.ID, docA, true, false)
+
+	// The database guard must reject a document owned by another account.
+	if _, err := pool.Exec(ctx, `
+INSERT INTO public.user_profile_video_banners(owner_user_id, document_id)
+VALUES ($1, $2)`, otherOwner.ID, docA); err == nil {
+		t.Fatal("expected cross-account profile banner document to be rejected")
+	}
 
 	// A document cannot be deleted while the profile still references it.
 	if _, err := pool.Exec(ctx, "DELETE FROM public.documents WHERE id = $1", docA); err == nil {
