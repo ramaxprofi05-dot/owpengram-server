@@ -2,6 +2,8 @@ package plugins
 
 import (
 	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/hex"
 	"crypto/rand"
 	"encoding/base64"
 	"strings"
@@ -107,6 +109,22 @@ func TestValidateInstallableManifestRequiresIntegrityMetadata(t *testing.T) {
 	m.Signature = base64.StdEncoding.EncodeToString(make([]byte, 64))
 	if err := ValidateInstallableManifest(m); err != nil {
 		t.Fatalf("signed manifest: %v", err)
+	}
+}
+
+func TestVerifyPackageDigestBindsManifestToExactArchive(t *testing.T) {
+	archive := []byte("signed plugin archive")
+	sum := sha256.Sum256(archive)
+	m := validManifest()
+	m.SHA256 = hex.EncodeToString(sum[:])
+	m.SignerKeyID = "femboygram-test-key"
+	m.Signature = base64.StdEncoding.EncodeToString(make([]byte, 64))
+
+	if err := VerifyPackageDigest(m, archive); err != nil {
+		t.Fatalf("matching archive rejected: %v", err)
+	}
+	if err := VerifyPackageDigest(m, []byte("modified plugin archive")); err == nil {
+		t.Fatal("archive with a different digest was accepted")
 	}
 }
 
