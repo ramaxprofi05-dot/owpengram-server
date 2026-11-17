@@ -5,9 +5,7 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"testing"
 )
@@ -20,8 +18,7 @@ func signedTestArchive(t *testing.T, entryName string, entrypoint []byte) ([]byt
 	}
 	m := validManifest()
 	m.Entrypoint = entryName
-	sum := sha256.Sum256(entrypoint)
-	m.SHA256 = hex.EncodeToString(sum[:])
+	m.SHA256 = PackageContentSHA256(map[string][]byte{entryName: entrypoint})
 	m.SignerKeyID = "femboygram-test-key"
 	payload, err := SigningPayload(m)
 	if err != nil {
