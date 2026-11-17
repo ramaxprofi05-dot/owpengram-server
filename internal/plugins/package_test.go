@@ -36,7 +36,7 @@ func signedTestArchive(t *testing.T, entryName string, entrypoint []byte) ([]byt
 	var buffer bytes.Buffer
 	writer := zip.NewWriter(&buffer)
 	for name, body := range map[string][]byte{pluginManifestName: manifestBytes, entryName: entrypoint} {
-		part, err := writer.Create(name)
+		part, err := writer.CreateHeader(&zip.FileHeader{Name: name, Method: zip.Store})
 		if err != nil {
 			t.Fatal(err)
 		}
