@@ -12,6 +12,20 @@ CREATE TABLE public.user_profile_video_banners (
 CREATE INDEX user_profile_video_banners_document_idx
     ON public.user_profile_video_banners(document_id);
 
+CREATE FUNCTION public.touch_user_profile_video_banner_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$;
+
+CREATE TRIGGER user_profile_video_banners_updated_at
+BEFORE UPDATE ON public.user_profile_video_banners
+FOR EACH ROW EXECUTE FUNCTION public.touch_user_profile_video_banner_updated_at();
+
 -- Keep the existing media-retention system aware of the banner reference.
 -- Removing/replacing a banner marks the old document orphaned only when no
 -- other feature still references it. This mirrors the existing media store
