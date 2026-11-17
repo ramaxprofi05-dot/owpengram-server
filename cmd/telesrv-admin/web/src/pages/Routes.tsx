@@ -26,6 +26,7 @@ import { ServerSettingsPage } from "./ServerSettingsPage";
 import { ModerationCaseDetailPage } from "./ModerationCaseDetailPage";
 import { ModerationCasesPage } from "./ModerationCasesPage";
 import { StoragePage } from "./StoragePage";
+import { PluginsPage } from "./PluginsPage";
 import { BotVerificationPage } from "./BotVerificationPage";
 import { BotVerificationRequestPage } from "./BotVerificationRequestPage";
 import { VerificationDetailPage } from "./VerificationDetailPage";
@@ -53,6 +54,7 @@ import {
   permissionStarGiftsManage,
   permissionStorageRead,
   permissionUsernamesRead,
+  permissionPluginsRead,
   permissionVerificationReview
 } from "../permissions";
 
@@ -115,6 +117,9 @@ export function Routes({ route, navigate }: { route: RouteState; navigate: Navig
   }
   if (route.path === "/collectible-usernames") {
     return gate(permissionUsernamesRead, <CollectibleUsernamesPage navigate={navigate} />);
+  }
+  if (route.path === "/plugins") {
+    return gate(permissionPluginsRead, <PluginsPage />);
   }
   if (route.path === "/storage") {
     return gate(permissionStorageRead, <StoragePage navigate={navigate} />);
