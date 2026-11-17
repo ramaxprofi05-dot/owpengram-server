@@ -300,7 +300,7 @@ func (s *Service) loadAppConfig(ctx context.Context) domain.AppConfig {
 		// DB 行允许运维覆盖，但 hash 落后于代码默认值时视为陈旧（历史 seed 残留），
 		// 以默认值为准——否则新增配置 key 永远被旧行遮蔽（曾导致 emojies_send_dice 未下发）。
 		// 读失败也回退默认值(默认值恒有效),不让一次瞬时 DB 抖动污染整个进程生命周期的缓存。
-		if err != nil || !found || cfg.Hash < defaultAppConfigHash {
+		if err != nil || !found || cfg.Hash < defaultCfg.Hash {
 			cfg = defaultCfg
 		}
 		s.appConfigCache = cfg
