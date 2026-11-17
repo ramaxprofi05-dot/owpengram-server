@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api, errorMessage } from "../api";
 import { DataTable, type Column } from "../components/DataTable";
 import { Alert, Badge, Metric, PageFrame } from "../components/ui";
-import type { PluginCatalogRow } from "../types";
+import type { PluginCatalogEventRow, PluginCatalogRow, PluginPublisherRow } from "../types";
 
 function PluginStatus({ status }: { status: PluginCatalogRow["status"] }) {
   if (status === "approved") return <Badge tone="good">{"Approved"}</Badge>;
@@ -13,6 +13,8 @@ function PluginStatus({ status }: { status: PluginCatalogRow["status"] }) {
 
 export function PluginsPage() {
   const [rows, setRows] = useState<PluginCatalogRow[]>([]);
+  const [publishers, setPublishers] = useState<PluginPublisherRow[]>([]);
+  const [events, setEvents] = useState<PluginCatalogEventRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,7 +22,10 @@ export function PluginsPage() {
     setBusy(true);
     setError("");
     try {
-      setRows((await api.plugins()).rows ?? []);
+      const response = await api.plugins();
+      setRows(response.rows ?? []);
+      setPublishers(response.publishers ?? []);
+      setEvents(response.events ?? []);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -51,6 +56,22 @@ export function PluginsPage() {
     { key: "updated", label: "Updated", sortValue: (row) => row.updated_at, render: (row) => <span>{new Date(row.updated_at).toLocaleString()}</span> }
   ];
 
+
+  const publisherColumns: Column<PluginPublisherRow>[] = [
+    { key: "label", label: "Publisher", sortValue: (row) => row.label.toLowerCase(), render: (row) => <div><strong>{row.label}</strong><div className="muted mono">{row.key_id}</div></div> },
+    { key: "status", label: "Trust", render: (row) => <Badge tone={row.status === "active" ? "good" : "danger"}>{row.status === "active" ? "Trusted" : "Revoked"}</Badge> },
+    { key: "created", label: "Added by", render: (row) => <div>{row.created_by}<div className="muted">{new Date(row.created_at).toLocaleString()}</div></div> },
+    { key: "revoked", label: "Revoked by", render: (row) => row.revoked_by || "—" }
+  ];
+
+  const eventColumns: Column<PluginCatalogEventRow>[] = [
+    { key: "plugin", label: "Package", render: (row) => <div><strong>{row.plugin_id}</strong><div className="muted mono">{row.version}</div></div> },
+    { key: "action", label: "Event", render: (row) => <Badge>{row.action}</Badge> },
+    { key: "actor", label: "Actor", render: (row) => row.actor },
+    { key: "note", label: "Review note", render: (row) => row.note || "—" },
+    { key: "created", label: "Date", sortValue: (row) => row.created_at, render: (row) => new Date(row.created_at).toLocaleString() }
+  ];
+
   return (
     <PageFrame
       title={"Plugins"}
@@ -75,6 +96,15 @@ export function PluginsPage() {
         loading={busy && rows.length === 0}
         empty={"No plugin packages have been submitted."}
       />
+      <section className="panel-section">
+        <h2>{"Publisher trust roots"}</h2>
+        <p className="muted">{"Public signing-key registry. Private signing keys are never stored or displayed here."}</p>
+        <DataTable columns={publisherColumns} rows={publishers} rowKey={(row) => row.key_id} empty={"No publisher keys registered."} />
+      </section>
+      <section className="panel-section">
+        <h2>{"Review history"}</h2>
+        <DataTable columns={eventColumns} rows={events} rowKey={(row) => String(row.id)} empty={"No review events recorded."} />
+      </section>
     </PageFrame>
   );
 }
