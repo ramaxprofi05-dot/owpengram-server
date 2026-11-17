@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"telesrv/internal/domain"
 )
 
@@ -78,9 +80,7 @@ WHERE owner_user_id = $1`, owner.ID); err != nil {
 func assertProfileBannerReference(
 	t *testing.T,
 	ctx context.Context,
-	pool interface {
-		QueryRow(context.Context, string, ...any) interface{ Scan(...any) error }
-	},
+	pool *pgxpool.Pool,
 	ownerID, documentID int64,
 	wantReference, wantOrphaned bool,
 ) {
