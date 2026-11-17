@@ -40,7 +40,7 @@ func TestRenderWelcomeMessageTemplateSubstitutesServerName(t *testing.T) {
 	defer SetOfficialSystemUserDisplayName("")
 
 	got := RenderWelcomeMessageTemplate("Hello from {{server_name}}!")
-	if got != "Hello from OwpenGram!" {
+	if got != "Hello from FemboyGram!" {
 		t.Fatalf("expected default branding.ProductName() substitution, got %q", got)
 	}
 
