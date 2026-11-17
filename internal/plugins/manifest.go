@@ -269,8 +269,8 @@ func ValidateInstallableManifest(m Manifest) error {
 }
 
 // VerifyPackageDigest binds the signed manifest to the exact package bytes.
- // Call this before extracting or installing an archive; a valid manifest
- // signature alone does not prove that the downloaded package matches it.
+// Call this before extracting or installing an archive; a valid manifest
+// signature alone does not prove that the downloaded package matches it.
 func VerifyPackageDigest(m Manifest, packageBytes []byte) error {
 	if err := ValidateInstallableManifest(m); err != nil {
 		return err
