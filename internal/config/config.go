@@ -1089,7 +1089,7 @@ func Load() (Config, error) {
 		ScamWarning:                          envAllowEmptyOr("TELESRV_SCAM_WARNING", ""),
 		FakeWarning:                          envAllowEmptyOr("TELESRV_FAKE_WARNING", ""),
 		ReservedUsernames: envListOr("TELESRV_RESERVED_USERNAMES", []string{
-			"owpengram", "admin", "administrator", "support", "staff", "moderator", "official", "root", "owner",
+			"femboygram", "owpengram", "admin", "administrator", "support", "staff", "moderator", "official", "root", "owner",
 		}),
 		PublicLinkWebAddr:              envAllowEmptyOr("TELESRV_PUBLIC_LINK_WEB_ADDR", ""),
 		TelegramLoginEnabled:           envBoolOr("TELESRV_TELEGRAM_LOGIN_ENABLE", false),
