@@ -77,7 +77,7 @@ func TestValidateInstallableManifestRequiresIntegrityMetadata(t *testing.T) {
 }
 
 func TestSafeArchivePathRejectsZipSlip(t *testing.T) {
-	for _, name := range []string{"../escape", "a/../../escape", "/absolute", "a\\b", ".", ""} {
+	for _, name := range []string{"../escape", "a/../../escape", "/absolute", "a\\b", "C:/escape", "nul\\x00file", ".", ""} {
 		if SafeArchivePath(name) {
 			t.Fatalf("unsafe archive path %q accepted", name)
 		}
