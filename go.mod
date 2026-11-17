@@ -132,3 +132,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
+
+// The parent FemboyGram workspace supplies the pinned protocol source locally.
+replace github.com/owpengram/owpengram-td => ../owpengram-td
