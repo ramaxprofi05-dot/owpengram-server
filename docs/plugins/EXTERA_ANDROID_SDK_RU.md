@@ -1,9 +1,12 @@
 # Extera Android Plugin SDK — draft contract v1
 
 Этот документ фиксирует контракт расширений для Extera поверх существующего
-Android-клиента OwpenGram/FemboyGram. Он не добавляет загрузчик и не включает
-исполнение стороннего кода: runtime остаётся выключенным до реализации
-песочницы и capability broker.
+Android-клиента OwpenGram/FemboyGram. Android-клиент теперь содержит строгий
+парсер манифеста (`PluginManifest`), allowlist (`PluginCapability`) и модель
+проверки изменений разрешений (`PluginPermissionReview`). Они проверяют структуру
+и совместимость, но не запускают код и не подтверждают доверие к подписи.
+Runtime остаётся выключенным до реализации песочницы, проверки подписи на
+клиенте и capability broker.
 
 ## Пакет
 
@@ -64,6 +67,21 @@ these presentation hooks.
   the user explicitly chooses an export.
 - No DEX/JAR loading, reflection bridge, shell, unrestricted filesystem,
   hidden API access, or direct database/MTProto access.
+
+## Реализованная Android-основа
+
+- `PluginManifest.parse(byte[])` ограничивает размер, отклоняет неизвестные
+  поля, проверяет обязательные строки, SemVer, безопасный entrypoint и
+  совместимость permissions с target.
+- `PluginCapability` содержит единый клиентский allowlist capability.
+- `PluginPermissionReview.compare(...)` вычисляет новые и удалённые разрешения;
+  новые требуют отдельного согласия, удалённые должны быть отозваны.
+- Instrumentation-тесты покрывают валидный манифест, неизвестные поля и
+  capability, небезопасные пути и обновление разрешений.
+
+Парсер не является проверкой подписи: `isInstallable()` лишь проверяет наличие
+корректно сформированных полей целостности. Установка должна быть заблокирована,
+пока доверенный verifier не проверит digest архива и Ed25519-подпись.
 
 ## Permission lifecycle
 
