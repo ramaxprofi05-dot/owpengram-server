@@ -215,7 +215,7 @@ func TestServiceRebrandsEveryLanguagePackProjection(t *testing.T) {
 			t.Fatalf("%s projection: %v", name, err)
 		}
 		appName := findLangPackString(pack.Strings, "AppName")
-		if appName == nil || appName.Value != "OwpenGram" || appName.ZeroValue != "No OwpenGram accounts" || appName.OneValue != "One OwpenGram account" || appName.TwoValue != "Two OwpenGram accounts" || appName.FewValue != "Few OwpenGram accounts" || appName.ManyValue != "Many OwpenGram accounts" || appName.OtherValue != "Other OwpenGram accounts" {
+		if appName == nil || appName.Value != "FemboyGram" || appName.ZeroValue != "No FemboyGram accounts" || appName.OneValue != "One FemboyGram account" || appName.TwoValue != "Two FemboyGram accounts" || appName.FewValue != "Few FemboyGram accounts" || appName.ManyValue != "Many FemboyGram accounts" || appName.OtherValue != "Other FemboyGram accounts" {
 			t.Fatalf("%s AppName = %+v, want all value forms rebranded", name, appName)
 		}
 		if got := stringValue(pack.Strings, "TranslationLink"); got != "https://chat.example/root/en" {
@@ -230,7 +230,7 @@ func TestServiceRebrandsEveryLanguagePackProjection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list languages: %v", err)
 	}
-	if len(languages) != 1 || languages[0].Name != "OwpenGram English" || languages[0].NativeName != "OwpenGram English" || languages[0].TranslationsURL != "https://chat.example/root/en" {
+	if len(languages) != 1 || languages[0].Name != "FemboyGram English" || languages[0].NativeName != "FemboyGram English" || languages[0].TranslationsURL != "https://chat.example/root/en" {
 		t.Fatalf("languages = %+v, want branded metadata", languages)
 	}
 }
