@@ -25,7 +25,7 @@ ZIP валидируется без распаковки на диск: огра
 ## Разрешения
 
 Android:
-- `ui:chat-list`, `ui:chat-screen`, `ui:profile`;
+- `ui:chat-list`, `ui:chat-screen`, `ui:profile`, `ui:profile-banner`;
 - `events:message-metadata`, `events:profile-public`;
 - `storage:plugin`;
 - `network:https`.
