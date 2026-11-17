@@ -15,12 +15,12 @@ CREATE INDEX user_profile_video_banners_document_idx
 CREATE FUNCTION public.touch_user_profile_video_banner_updated_at()
 RETURNS trigger
 LANGUAGE plpgsql
-AS $
+AS $$
 BEGIN
     NEW.updated_at = now();
     RETURN NEW;
 END;
-$;
+$$;
 
 CREATE TRIGGER user_profile_video_banners_updated_at
 BEFORE UPDATE ON public.user_profile_video_banners
