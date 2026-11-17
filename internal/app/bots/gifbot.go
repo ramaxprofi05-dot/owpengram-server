@@ -88,7 +88,7 @@ func (s *Service) OnInlineQuery(ctx context.Context, botUserID, _ int64, query, 
 		if !ok {
 			// A catalog entry without its backing document is an integrity error.
 			// Fail the query rather than silently returning an incomplete gallery.
-			return domain.BotInlineResults{}, false, fmt.Errorf("gif catalog document %d not found", e.DocumentID)
+			return domain.BotInlineResults{}, true, fmt.Errorf("gif catalog document %d not found", e.DocumentID)
 		}
 		docCopy := doc
 		results = append(results, domain.BotInlineResult{
