@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"strings"
 
 	"telesrv/internal/domain"
 	"telesrv/internal/store"
@@ -33,12 +34,18 @@ func (s *PhoneChangeStore) ChangePhone(_ context.Context, req domain.PhoneChange
 		return domain.PhoneChangeResult{User: u}, nil
 	}
 	for id, existing := range s.users.byID {
-		if id != req.UserID && existing.Phone == req.Phone {
+		if id == req.UserID {
+			continue
+		}
+		if existing.Phone == req.Phone || (req.SignupEmail != "" && strings.EqualFold(existing.SignupEmail, req.SignupEmail)) {
 			s.users.mu.Unlock()
 			return domain.PhoneChangeResult{}, domain.ErrPhoneNumberOccupied
 		}
 	}
 	u.Phone = req.Phone
+	if req.SignupEmail != "" {
+		u.SignupEmail = req.SignupEmail
+	}
 	s.users.byID[req.UserID] = u
 	s.users.mu.Unlock()
 	return domain.PhoneChangeResult{User: u, Changed: true}, nil
