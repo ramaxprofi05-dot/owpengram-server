@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"strings"
 )
 
@@ -50,7 +51,7 @@ func ValidatePackageArchive(data []byte, trustedKeys map[string]ed25519.PublicKe
 		if !SafeArchivePath(name) {
 			return Manifest{}, fmt.Errorf("unsafe plugin archive path %q", name)
 		}
-		if file.Mode()&io.ModeSymlink != 0 {
+		if file.Mode()&fs.ModeSymlink != 0 {
 			return Manifest{}, fmt.Errorf("plugin archive contains a symbolic link %q", name)
 		}
 		if _, duplicate := files[name]; duplicate {
