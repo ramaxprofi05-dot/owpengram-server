@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	DefaultPublicBaseURL = "https://owpengram.org"
-	DefaultWebBaseURL    = "https://weba.owpengram.org"
+	DefaultPublicBaseURL = "http://127.0.0.1:2401"
+	DefaultWebBaseURL    = ""
 	DefaultAppScheme     = "owpg"
 	DefaultAppName       = "FemboyGram"
-	DefaultDownloadURL   = "https://owpengram.org"
+	DefaultDownloadURL   = "http://127.0.0.1:2401"
 )
 const MaxChatlistSlugBytes = 128
 
