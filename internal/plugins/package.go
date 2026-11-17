@@ -24,8 +24,9 @@ const (
 )
 
 // ValidatePackageArchive validates an uploaded ZIP without extracting it. The
-// manifest's SHA256 is the digest of its declared entrypoint. The manifest
-// signature is checked against the caller's explicit publisher trust store.
+// manifest SHA256 covers every package file except manifest.json, including
+// relative paths, so changing an asset also invalidates the signed package.
+// The signature is checked against the caller's explicit publisher trust store.
 // No package code is executed by this function.
 func ValidatePackageArchive(data []byte, trustedKeys map[string]ed25519.PublicKey) (Manifest, error) {
 	if len(data) == 0 || len(data) > MaxPackageBytes {
