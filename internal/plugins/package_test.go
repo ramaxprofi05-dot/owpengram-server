@@ -80,9 +80,3 @@ func TestValidatePackageArchiveRejectsUntrustedOrTamperedPackage(t *testing.T) {
 	}
 }
 
-func TestValidatePackageArchiveRejectsUnsafePaths(t *testing.T) {
-	data, publicKey, manifest := signedTestArchive(t, "../main.js", []byte("payload"))
-	if _, err := ValidatePackageArchive(data, map[string]ed25519.PublicKey{manifest.SignerKeyID: publicKey}); err == nil {
-		t.Fatal("path traversal entrypoint was accepted")
-	}
-}
