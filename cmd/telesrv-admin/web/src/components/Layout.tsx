@@ -52,6 +52,7 @@ import { permissionBotVerificationReview, permissionServerManage, permissionAdmi
   permissionStorageRead,
   permissionContentRead,
   permissionUsernamesRead,
+  permissionPluginsRead,
   permissionVerificationReview, useCan, useDonationsEnabled, useThirdPartyVerificationHidden } from "../permissions";
 import { type Navigate, type RouteState, routeSection, routeTitle } from "../routing";
 import { AddServerLinkModal } from "./AddServerLinkModal";
@@ -136,6 +137,7 @@ export function Shell({
   const canReviewModeration = useCan(permissionModerationReview);
   const canReadBroadcasts = useCan(permissionBroadcastsRead);
   const canReadStorage = useCan(permissionStorageRead);
+  const canReadPlugins = useCan(permissionPluginsRead);
   const canReadContent = useCan(permissionContentRead);
   const canReadUsernames = useCan(permissionUsernamesRead);
   // Same reasoning for the third-party queue, which has its own right: the two
@@ -394,9 +396,12 @@ export function Shell({
             </NavSection>
           )}
 
-          {(canReadStorage || canManageAdmins || canReadAuditLog || canManageServer) && (
+          {(canReadStorage || canReadPlugins || canManageAdmins || canReadAuditLog || canManageServer) && (
             <NavSection title={"Server"} icon={<Server />} route={route} collapsed={navCollapsed}
-              paths={["/storage", "/admin-users", "/audit-log", "/server-settings"]}>
+              paths={["/plugins", "/storage", "/admin-users", "/audit-log", "/server-settings"]}>
+              {canReadPlugins && (
+                <NavLink icon={<PlugConnection />} href="/plugins" route={route} navigate={navigate}>{"Plugins"}</NavLink>
+              )}
               {canReadStorage && (
                 <NavLink icon={<Database />} href="/storage" route={route} navigate={navigate}>{"Storage"}</NavLink>
               )}
