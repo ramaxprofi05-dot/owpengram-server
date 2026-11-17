@@ -192,7 +192,7 @@ func TestPremiumBotDepositListsNetworksAndRate(t *testing.T) {
 		"• Ethereum — ETH, USDC",
 		"1 ETH ≈ 480,000",
 		"• Sepolia (testnet) — ETH",
-		"Rate: 1 OwpenGram Stars = $0.005",
+		"Rate: 1 FemboyGram Stars = $0.005",
 		"200 per $1",
 	} {
 		if !strings.Contains(got, want) {
