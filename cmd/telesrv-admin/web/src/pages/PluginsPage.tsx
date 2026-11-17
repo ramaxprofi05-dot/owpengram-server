@@ -8,7 +8,7 @@ function PluginStatus({ status }: { status: PluginCatalogRow["status"] }) {
   if (status === "approved") return <Badge tone="good">{"Approved"}</Badge>;
   if (status === "disabled") return <Badge tone="warn">{"Disabled"}</Badge>;
   if (status === "rejected") return <Badge tone="danger">{"Rejected"}</Badge>;
-  return <Badge tone="info">{"Pending review"}</Badge>;
+  return <Badge tone="neutral">{"Pending review"}</Badge>;
 }
 
 export function PluginsPage() {
