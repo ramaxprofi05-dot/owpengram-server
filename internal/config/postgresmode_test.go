@@ -31,6 +31,9 @@ func TestLoadKeepsOldDockerInstallExternal(t *testing.T) {
 	t.Setenv("TELESRV_POSTGRES_DSN", dsn)
 	t.Setenv("TELESRV_BLOB_BACKEND", "s3")
 	t.Setenv("TELESRV_S3_ENDPOINT", "127.0.0.1:9000")
+	t.Setenv("TELESRV_S3_BUCKET", "test-bucket")
+	t.Setenv("TELESRV_S3_ACCESS_KEY_ID", "test-access-key")
+	t.Setenv("TELESRV_S3_SECRET_ACCESS_KEY", "test-secret-key")
 
 	cfg, err := Load()
 	if err != nil {
@@ -71,6 +74,11 @@ func TestLoadBlobBackendFollowsWhatIsConfigured(t *testing.T) {
 			disableDefaultConfigFile(t)
 			t.Setenv("TELESRV_BLOB_BACKEND", tt.backend)
 			t.Setenv("TELESRV_S3_ENDPOINT", tt.endpoint)
+			if tt.want == "s3" {
+				t.Setenv("TELESRV_S3_BUCKET", "test-bucket")
+				t.Setenv("TELESRV_S3_ACCESS_KEY_ID", "test-access-key")
+				t.Setenv("TELESRV_S3_SECRET_ACCESS_KEY", "test-secret-key")
+			}
 			cfg, err := Load()
 			if err != nil {
 				t.Fatalf("Load: %v", err)
