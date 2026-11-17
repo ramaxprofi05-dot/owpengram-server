@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"path"
 	"regexp"
 	"strings"
@@ -74,8 +75,11 @@ func ParseManifest(data []byte) (Manifest, error) {
 	if err := decoder.Decode(&manifest); err != nil {
 		return Manifest{}, fmt.Errorf("decode plugin manifest: %w", err)
 	}
-	if err := decoder.Decode(new(any)); !errors.Is(err, fmt.Errorf("EOF")) && err == nil {
-		return Manifest{}, errors.New("plugin manifest must contain exactly one JSON object")
+	if err := decoder.Decode(new(any)); err != io.EOF {
+		if err == nil {
+			return Manifest{}, errors.New("plugin manifest must contain exactly one JSON object")
+		}
+		return Manifest{}, fmt.Errorf("trailing data after plugin manifest: %w", err)
 	}
 	if err := ValidateManifest(manifest); err != nil {
 		return Manifest{}, err
