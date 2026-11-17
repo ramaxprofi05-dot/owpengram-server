@@ -25,38 +25,35 @@ import (
 
 func starGiftInvalidErr() error { return tgerr.New(400, "STARGIFT_INVALID") }
 
-func devStarsTopupOptions() []tg.StarsTopupOption {
-	return []tg.StarsTopupOption{
-		{Stars: 1000, Currency: "USD", Amount: 99},
-		{Stars: 2500, Currency: "USD", Amount: 199},
-		{Stars: 5000, Currency: "USD", Amount: 399},
+func starGiftPurchasesDisabledErr() error {
+	return tgerr.New(400, "STARGIFT_PURCHASES_DISABLED")
+}
+
+func isPaidStarGiftInvoice(invoice tg.InputInvoiceClass) bool {
+	switch invoice.(type) {
+	case *tg.InputInvoiceStarGift,
+		*tg.InputInvoiceStarGiftUpgrade,
+		*tg.InputInvoiceStarGiftTransfer,
+		*tg.InputInvoiceStarGiftResale,
+		*tg.InputInvoiceStarGiftAuctionBid,
+		*tg.InputInvoiceStarGiftPrepaidUpgrade,
+		*tg.InputInvoiceStarGiftDropOriginalDetails:
+		return true
+	default:
+		return false
 	}
 }
 
-func devStarsGiftOptions() []tg.StarsGiftOption {
-	// No store_product is advertised: telesrv has no Google/Apple product and
-	// sideloaded Android clients must use the invoice checkout path.
-	return []tg.StarsGiftOption{
-		{Stars: 1000, Currency: "USD", Amount: 99},
-		{Stars: 2500, Currency: "USD", Amount: 199},
-		{Stars: 5000, Currency: "USD", Amount: 399},
-	}
-}
+// FemboyGram Stars are an internal ledger unit. No card/fiat top-ups are offered;
+// administrators credit balances through the audited Control Center.
+func devStarsTopupOptions() []tg.StarsTopupOption { return nil }
 
-func devStarsGiveawayOptions() []tg.StarsGiveawayOption {
-	return []tg.StarsGiveawayOption{
-		{Default: true, Stars: 1000, YearlyBoosts: 4, Currency: "USD", Amount: 99, Winners: []tg.StarsGiveawayWinnersOption{
-			{Default: true, Users: 1, PerUserStars: 1000}, {Users: 2, PerUserStars: 500},
-			{Users: 5, PerUserStars: 200}, {Users: 10, PerUserStars: 100},
-		}},
-		{Stars: 2500, YearlyBoosts: 10, Currency: "USD", Amount: 199, Winners: []tg.StarsGiveawayWinnersOption{
-			{Default: true, Users: 1, PerUserStars: 2500}, {Users: 5, PerUserStars: 500}, {Users: 10, PerUserStars: 250},
-		}},
-		{Stars: 5000, YearlyBoosts: 20, Currency: "USD", Amount: 399, Winners: []tg.StarsGiveawayWinnersOption{
-			{Default: true, Users: 1, PerUserStars: 5000}, {Users: 5, PerUserStars: 1000}, {Users: 10, PerUserStars: 500},
-		}},
-	}
-}
+// Paid Stars gifts are disabled. Gifts are issued through the audited admin
+// grant path and are never purchased with FemboyGram Stars.
+func devStarsGiftOptions() []tg.StarsGiftOption { return nil }
+
+// Fiat-funded Stars giveaways are not part of FemboyGram's internal currency.
+func devStarsGiveawayOptions() []tg.StarsGiveawayOption { return nil }
 
 func (r *Router) devStarsFiatPaymentForm(
 	buyerUserID int64,
@@ -335,9 +332,11 @@ func (r *Router) starsGiveawayPaymentForm(ctx context.Context, buyerUserID int64
 
 // onPaymentsGetStarGifts 返回可购买礼物目录（hash 命中返回 NotModified）。
 func (r *Router) onPaymentsGetStarGifts(ctx context.Context, hash int) (tg.PaymentsStarGiftsClass, error) {
-	if r.deps.Gifts == nil {
-		return &tg.PaymentsStarGifts{Gifts: []tg.StarGiftClass{}, Chats: []tg.ChatClass{}, Users: []tg.UserClass{}}, nil
-	}
+	// FemboyGram gift catalog entries are administered and granted by staff.
+	// The public MTProto purchase catalog stays empty; received gifts still
+	// appear through saved-gift and profile RPCs.
+	return &tg.PaymentsStarGifts{Gifts: []tg.StarGiftClass{}, Chats: []tg.ChatClass{}, Users: []tg.UserClass{}}, nil
+}
 	catalogHash, err := r.deps.Gifts.CatalogHash(ctx)
 	if err != nil {
 		return nil, internalErr()
@@ -373,6 +372,9 @@ func (r *Router) onPaymentsGetPaymentForm(ctx context.Context, req *tg.PaymentsG
 	userID, _, err := r.currentUserID(ctx)
 	if err != nil {
 		return nil, internalErr()
+	}
+	if isPaidStarGiftInvoice(req.Invoice) {
+		return nil, starGiftPurchasesDisabledErr()
 	}
 
 	switch inv := req.Invoice.(type) {
@@ -572,6 +574,9 @@ func (r *Router) onPaymentsSendStarsForm(ctx context.Context, req *tg.PaymentsSe
 	userID, _, err := r.currentUserID(ctx)
 	if err != nil {
 		return nil, internalErr()
+	}
+	if isPaidStarGiftInvoice(req.Invoice) {
+		return nil, starGiftPurchasesDisabledErr()
 	}
 
 	switch inv := req.Invoice.(type) {
