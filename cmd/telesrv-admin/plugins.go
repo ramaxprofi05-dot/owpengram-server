@@ -6,6 +6,26 @@ import (
 	"time"
 )
 
+type pluginPublisherRow struct {
+	KeyID     string     `json:"key_id"`
+	Label     string     `json:"label"`
+	Status    string     `json:"status"`
+	CreatedBy string     `json:"created_by"`
+	CreatedAt time.Time  `json:"created_at"`
+	RevokedBy string     `json:"revoked_by"`
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
+}
+
+type pluginCatalogEventRow struct {
+	ID        int64     `json:"id"`
+	PluginID  string    `json:"plugin_id"`
+	Version   string    `json:"version"`
+	Action    string    `json:"action"`
+	Actor     string    `json:"actor"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type pluginCatalogRow struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
@@ -64,5 +84,52 @@ LIMIT 500`)
 		writeAPIError(w, http.StatusInternalServerError, "could not finish reading plugin catalog")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"rows": result})
+	publisherRows, err := s.read.pool.Query(r.Context(), `
+SELECT signer_key_id, label, status, created_by, created_at, revoked_by, revoked_at
+FROM public.plugin_publishers
+ORDER BY created_at DESC, signer_key_id ASC
+LIMIT 500`)
+	if err != nil {
+		writeAPIError(w, http.StatusInternalServerError, "could not read plugin publishers")
+		return
+	}
+	defer publisherRows.Close()
+	publishers := make([]pluginPublisherRow, 0)
+	for publisherRows.Next() {
+		var row pluginPublisherRow
+		if err := publisherRows.Scan(&row.KeyID, &row.Label, &row.Status, &row.CreatedBy, &row.CreatedAt, &row.RevokedBy, &row.RevokedAt); err != nil {
+			writeAPIError(w, http.StatusInternalServerError, "could not read plugin publisher row")
+			return
+		}
+		publishers = append(publishers, row)
+	}
+	if err := publisherRows.Err(); err != nil {
+		writeAPIError(w, http.StatusInternalServerError, "could not finish reading plugin publishers")
+		return
+	}
+
+	eventRows, err := s.read.pool.Query(r.Context(), `
+SELECT id, plugin_id, version, action, actor, note, created_at
+FROM public.plugin_catalog_events
+ORDER BY created_at DESC, id DESC
+LIMIT 200`)
+	if err != nil {
+		writeAPIError(w, http.StatusInternalServerError, "could not read plugin review history")
+		return
+	}
+	defer eventRows.Close()
+	events := make([]pluginCatalogEventRow, 0)
+	for eventRows.Next() {
+		var row pluginCatalogEventRow
+		if err := eventRows.Scan(&row.ID, &row.PluginID, &row.Version, &row.Action, &row.Actor, &row.Note, &row.CreatedAt); err != nil {
+			writeAPIError(w, http.StatusInternalServerError, "could not read plugin review event")
+			return
+		}
+		events = append(events, row)
+	}
+	if err := eventRows.Err(); err != nil {
+		writeAPIError(w, http.StatusInternalServerError, "could not finish reading plugin review history")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"rows": result, "publishers": publishers, "events": events})
 }
