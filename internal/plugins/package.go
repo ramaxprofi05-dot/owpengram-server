@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
+	"sort"
 	"strings"
 )
 
@@ -83,20 +85,25 @@ func ValidatePackageArchive(data []byte, trustedKeys map[string]ed25519.PublicKe
 		return Manifest{}, err
 	}
 
-	entrypoint, ok := files[manifest.Entrypoint]
-	if !ok {
+	if _, ok := files[manifest.Entrypoint]; !ok {
 		return Manifest{}, fmt.Errorf("plugin entrypoint %q is missing from archive", manifest.Entrypoint)
 	}
-	if entrypoint.UncompressedSize64 > MaxPackageEntryBytes {
-		return Manifest{}, errors.New("plugin entrypoint exceeds the size limit")
+	packageFiles := make(map[string][]byte, len(files)-1)
+	for name, file := range files {
+		if name == pluginManifestName {
+			continue
+		}
+		if file.UncompressedSize64 > MaxPackageEntryBytes {
+			return Manifest{}, fmt.Errorf("plugin file %q exceeds the size limit", name)
+		}
+		body, err := readZipEntry(file, MaxPackageEntryBytes)
+		if err != nil {
+			return Manifest{}, fmt.Errorf("read plugin file %q: %w", name, err)
+		}
+		packageFiles[name] = body
 	}
-	entrypointBytes, err := readZipEntry(entrypoint, MaxPackageEntryBytes)
-	if err != nil {
-		return Manifest{}, fmt.Errorf("read plugin entrypoint: %w", err)
-	}
-	sum := sha256.Sum256(entrypointBytes)
-	if hex.EncodeToString(sum[:]) != manifest.SHA256 {
-		return Manifest{}, errors.New("plugin entrypoint sha256 does not match manifest")
+	if PackageContentSHA256(packageFiles) != manifest.SHA256 {
+		return Manifest{}, errors.New("plugin package sha256 does not match manifest")
 	}
 	if err := VerifyManifestSignature(manifest, trustedKeys); err != nil {
 		return Manifest{}, err
@@ -121,4 +128,31 @@ func readZipEntry(file *zip.File, limit int64) ([]byte, error) {
 		return nil, errors.New("archive entry size does not match its directory record")
 	}
 	return data, nil
+}
+
+
+// PackageContentSHA256 computes the signed package digest independently of ZIP
+// compression and entry order. File names and content lengths are framed to
+// prevent ambiguous concatenations. manifest.json is excluded to avoid a
+// self-referential digest.
+func PackageContentSHA256(files map[string][]byte) string {
+	names := make([]string, 0, len(files))
+	for name := range files {
+		if name != pluginManifestName {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	hash := sha256.New()
+	var length [8]byte
+	for _, name := range names {
+		binary.BigEndian.PutUint64(length[:], uint64(len(name)))
+		_, _ = hash.Write(length[:])
+		_, _ = hash.Write([]byte(name))
+		body := files[name]
+		binary.BigEndian.PutUint64(length[:], uint64(len(body)))
+		_, _ = hash.Write(length[:])
+		_, _ = hash.Write(body)
+	}
+	return hex.EncodeToString(hash.Sum(nil))
 }
