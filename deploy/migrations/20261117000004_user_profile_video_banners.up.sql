@@ -12,9 +12,37 @@ CREATE TABLE public.user_profile_video_banners (
 CREATE INDEX user_profile_video_banners_document_idx
     ON public.user_profile_video_banners(document_id);
 
--- Keep the existing storage-retention system aware that this document is
--- still referenced while it is used as a profile banner.
-INSERT INTO public.media_references(media_kind, media_id, ref_kind, ref_key)
-SELECT 'document', document_id, 'profile_video_banner', owner_user_id::text
-FROM public.user_profile_video_banners
-ON CONFLICT DO NOTHING;
+-- Keep the existing media-retention system aware of the banner reference on
+-- every insert, replacement, and removal. This is transactional with the row.
+CREATE FUNCTION public.sync_user_profile_video_banner_media_reference()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        DELETE FROM public.media_references
+        WHERE media_kind = 'document'
+          AND media_id = OLD.document_id
+          AND ref_kind = 'profile_video_banner'
+          AND ref_key = OLD.owner_user_id::text;
+        RETURN OLD;
+    END IF;
+
+    IF TG_OP = 'UPDATE' AND OLD.document_id IS DISTINCT FROM NEW.document_id THEN
+        DELETE FROM public.media_references
+        WHERE media_kind = 'document'
+          AND media_id = OLD.document_id
+          AND ref_kind = 'profile_video_banner'
+          AND ref_key = OLD.owner_user_id::text;
+    END IF;
+
+    INSERT INTO public.media_references(media_kind, media_id, ref_kind, ref_key)
+    VALUES ('document', NEW.document_id, 'profile_video_banner', NEW.owner_user_id::text)
+    ON CONFLICT DO NOTHING;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER user_profile_video_banners_media_reference
+AFTER INSERT OR UPDATE OR DELETE ON public.user_profile_video_banners
+FOR EACH ROW EXECUTE FUNCTION public.sync_user_profile_video_banner_media_reference();
