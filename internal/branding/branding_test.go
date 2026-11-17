@@ -27,9 +27,9 @@ func TestUserVisibleTextPreservesTechnicalIdentifiers(t *testing.T) {
 
 func TestUserVisibleTextRebrandsBareOfficialHostsWithoutTouchingDottedIdentifiers(t *testing.T) {
 	for input, want := range map[string]string{
-		"telegram.org":           "owpengram.org",
-		"desktop.telegram.org":   "owpengram.org",
-		"t.me/example":           "owpengram.org/example",
+		"telegram.org":           "127.0.0.1:2401",
+		"desktop.telegram.org":   "127.0.0.1:2401",
+		"t.me/example":           "127.0.0.1:2401/example",
 		"org.telegram.messenger": "org.telegram.messenger",
 	} {
 		if got := UserVisibleText(input, ""); got != want {
