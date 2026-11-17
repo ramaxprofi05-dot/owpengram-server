@@ -3,9 +3,7 @@ package plugins
 import (
 	"bytes"
 	"crypto/ed25519"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -268,32 +266,12 @@ func ValidateInstallableManifest(m Manifest) error {
 	return nil
 }
 
-// VerifyPackageDigest binds the signed manifest to the exact package bytes.
-// Call this before extracting or installing an archive; a valid manifest
-// signature alone does not prove that the downloaded package matches it.
-func VerifyPackageDigest(m Manifest, packageBytes []byte) error {
-	if err := ValidateInstallableManifest(m); err != nil {
-		return err
-	}
-	sum := sha256.Sum256(packageBytes)
-	actual := hex.EncodeToString(sum[:])
-	if actual != m.SHA256 {
-		return errors.New("plugin package SHA-256 does not match its signed manifest")
-	}
-	return nil
-}
-
-// VerifyPluginPackage is the complete pre-install trust gate. It binds the
-// exact archive bytes to the manifest digest and then verifies the manifest
-// signature against the configured trusted publisher keys.
-func VerifyPluginPackage(m Manifest, packageBytes []byte, trustedKeys map[string]ed25519.PublicKey) error {
-	if err := VerifyPackageDigest(m, packageBytes); err != nil {
-		return err
-	}
-	if err := VerifyManifestSignature(m, trustedKeys); err != nil {
-		return err
-	}
-	return nil
+// VerifyPluginPackage is the single pre-install trust gate. It validates
+// archive paths and size limits, verifies the content digest over every
+// package file, and checks the manifest signature against trusted publishers.
+// The archive is inspected in place and no plugin code is extracted or run.
+func VerifyPluginPackage(packageBytes []byte, trustedKeys map[string]ed25519.PublicKey) (Manifest, error) {
+	return ValidatePackageArchive(packageBytes, trustedKeys)
 }
 
 func SafeArchivePath(name string) bool {
