@@ -44,7 +44,7 @@ var (
 	keyIDPattern    = regexp.MustCompile(`^[a-zA-Z0-9._-]{8,96}$`)
 	permissionSets  = map[Target]map[string]struct{}{
 		TargetAndroid: setOf(
-			"ui:chat-list", "ui:chat-screen", "ui:profile",
+			"ui:chat-list", "ui:chat-screen", "ui:profile", "ui:profile-banner",
 			"events:message-metadata", "events:profile-public",
 			"storage:plugin", "network:https",
 		),
