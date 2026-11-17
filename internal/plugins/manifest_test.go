@@ -128,6 +128,35 @@ func TestVerifyPackageDigestBindsManifestToExactArchive(t *testing.T) {
 	}
 }
 
+func TestVerifyPluginPackageRequiresMatchingArchiveAndTrustedSignature(t *testing.T) {
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatalf("generate signing key: %v", err)
+	}
+
+	archive := []byte("complete signed plugin archive")
+	sum := sha256.Sum256(archive)
+	m := validManifest()
+	m.SHA256 = hex.EncodeToString(sum[:])
+	m.SignerKeyID = "femboygram-test-key"
+	payload, err := SigningPayload(m)
+	if err != nil {
+		t.Fatalf("SigningPayload: %v", err)
+	}
+	m.Signature = base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, payload))
+	trusted := map[string]ed25519.PublicKey{m.SignerKeyID: publicKey}
+
+	if err := VerifyPluginPackage(m, archive, trusted); err != nil {
+		t.Fatalf("valid package rejected: %v", err)
+	}
+	if err := VerifyPluginPackage(m, []byte("tampered archive"), trusted); err == nil {
+		t.Fatal("tampered archive was accepted")
+	}
+	if err := VerifyPluginPackage(m, archive, nil); err == nil {
+		t.Fatal("package signed by an untrusted publisher was accepted")
+	}
+}
+
 func TestSafeArchivePathRejectsZipSlip(t *testing.T) {
 	for _, name := range []string{"../escape", "a/../../escape", "/absolute", "a\\b", "C:/escape", "nul\x00file", ".", ""} {
 		if SafeArchivePath(name) {
