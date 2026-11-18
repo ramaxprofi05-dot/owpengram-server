@@ -52,7 +52,7 @@ var (
 			"server:message-metadata-hook", "server:profile-public-hook",
 			"storage:plugin", "network:https",
 		),
-	},
+	}
 )
 
 func setOf(values ...string) map[string]struct{} {
