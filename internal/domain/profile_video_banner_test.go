@@ -1,6 +1,9 @@
 package domain
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestDocumentIsProfileVideoBanner(t *testing.T) {
 	valid := Document{
@@ -23,6 +26,9 @@ func TestDocumentIsProfileVideoBanner(t *testing.T) {
 		{"oversized", func(d *Document) { d.Size = MaxProfileVideoBannerBytes + 1 }},
 		{"zero duration", func(d *Document) { d.Attributes[0].Duration = 0 }},
 		{"long duration", func(d *Document) { d.Attributes[0].Duration = MaxProfileVideoBannerDuration + 1 }},
+		{"NaN duration", func(d *Document) { d.Attributes[0].Duration = math.NaN() }},
+		{"positive infinite duration", func(d *Document) { d.Attributes[0].Duration = math.Inf(1) }},
+		{"negative infinite duration", func(d *Document) { d.Attributes[0].Duration = math.Inf(-1) }},
 		{"round video", func(d *Document) { d.Attributes[0].RoundMessage = true }},
 		{"missing dimensions", func(d *Document) { d.Attributes[0].W = 0 }},
 		{"excessive dimensions", func(d *Document) { d.Attributes[0].W = 3841 }},
