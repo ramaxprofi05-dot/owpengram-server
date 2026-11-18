@@ -39,48 +39,7 @@ type Manifest struct {
 
 var (
 	pluginIDPattern = regexp.MustCompile(`^[a-z0-9]+([.-][a-z0-9]+){2,}$`)
-	semverPattern   = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?package plugins
-
-import (
-	"bytes"
-	"crypto/ed25519"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"path"
-	"regexp"
-	"strings"
-	"unicode/utf8"
-)
-
-const MaxManifestBytes = 64 << 10
-
-type Target string
-
-const (
-	TargetAndroid Target = "android"
-	TargetServer  Target = "server"
-)
-
-type Manifest struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Version     string   `json:"version"`
-	Author      string   `json:"author"`
-	Description string   `json:"description"`
-	Target      Target   `json:"target"`
-	Entrypoint  string   `json:"entrypoint"`
-	Permissions []string `json:"permissions"`
-	SHA256      string   `json:"sha256,omitempty"`
-	SignerKeyID string   `json:"signer_key_id,omitempty"`
-	Signature   string   `json:"signature,omitempty"`
-}
-
-var (
-	pluginIDPattern = regexp.MustCompile(`^[a-z0-9]+([.-][a-z0-9]+){2,}$`)
-	semverPattern   = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+))
+	semverPattern   = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`)
 	sha256Pattern   = regexp.MustCompile(`^[a-f0-9]{64}$`)
 	keyIDPattern    = regexp.MustCompile(`^[a-zA-Z0-9._-]{8,96}$`)
 	permissionSets  = map[Target]map[string]struct{}{
@@ -93,7 +52,7 @@ var (
 			"server:message-metadata-hook", "server:profile-public-hook",
 			"storage:plugin", "network:https",
 		),
-	}
+	},
 )
 
 func setOf(values ...string) map[string]struct{} {
