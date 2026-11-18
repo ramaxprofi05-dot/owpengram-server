@@ -88,6 +88,16 @@ FROM public.documents WHERE id = $1`, documentID, fmt.Sprint(owner.ID)).Scan(&ha
 	}
 	assertMediaReference(validID, true, false)
 
+	if _, err := media.SetProfileVideoBanner(ctx, owner.ID, invalidID); !errors.Is(err, ErrProfileVideoBannerInvalidMedia) {
+		t.Fatalf("replace with invalid media: got %v, want media validation error", err)
+	}
+	afterRejectedReplacement, stillFound, err := media.GetProfileVideoBanner(ctx, owner.ID)
+	if err != nil || !stillFound || afterRejectedReplacement.Document.ID != validID {
+		t.Fatalf("invalid replacement must preserve previous banner: found=%v document=%d err=%v",
+			stillFound, afterRejectedReplacement.Document.ID, err)
+	}
+	assertMediaReference(validID, true, false)
+
 	if _, err := media.SetProfileVideoBanner(ctx, owner.ID, replacementID); err != nil {
 		t.Fatalf("replace profile banner: %v", err)
 	}
