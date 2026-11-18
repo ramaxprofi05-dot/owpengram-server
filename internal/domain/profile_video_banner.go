@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"math"
 	"strings"
 	"time"
 )
@@ -19,10 +20,13 @@ type ProfileVideoBanner struct {
 const (
 	MaxProfileVideoBannerBytes    int64   = 30 << 20
 	MaxProfileVideoBannerDuration float64 = 60
+	MaxProfileVideoBannerDimension        = 3840
 )
 
 // IsProfileVideoBanner reports whether a document has the format and metadata
-// required by the current profile-banner playback contract.
+// required by the current profile-banner playback contract. Reject non-finite
+// durations explicitly: comparisons with NaN are false, so range checks alone
+// would otherwise accept malformed metadata.
 func (d Document) IsProfileVideoBanner() bool {
 	if d.ID <= 0 || d.AccessHash == 0 || d.OwnerUserID <= 0 ||
 		d.Size <= 0 || d.Size > MaxProfileVideoBannerBytes {
@@ -33,8 +37,10 @@ func (d Document) IsProfileVideoBanner() bool {
 	}
 	for _, attr := range d.Attributes {
 		if attr.Kind != DocAttrVideo || attr.RoundMessage ||
+			math.IsNaN(attr.Duration) || math.IsInf(attr.Duration, 0) ||
 			attr.Duration <= 0 || attr.Duration > MaxProfileVideoBannerDuration ||
-			attr.W <= 0 || attr.H <= 0 || attr.W > 3840 || attr.H > 3840 {
+			attr.W <= 0 || attr.H <= 0 ||
+			attr.W > MaxProfileVideoBannerDimension || attr.H > MaxProfileVideoBannerDimension {
 			continue
 		}
 		return true
