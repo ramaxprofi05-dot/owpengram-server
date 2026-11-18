@@ -21,7 +21,11 @@ func TestDocumentIsProfileVideoBanner(t *testing.T) {
 		name string
 		edit func(*Document)
 	}{
+		{"missing document id", func(d *Document) { d.ID = 0 }},
+		{"missing access hash", func(d *Document) { d.AccessHash = 0 }},
 		{"missing owner", func(d *Document) { d.OwnerUserID = 0 }},
+		{"zero size", func(d *Document) { d.Size = 0 }},
+		{"negative size", func(d *Document) { d.Size = -1 }},
 		{"wrong MIME", func(d *Document) { d.MimeType = "video/webm" }},
 		{"oversized", func(d *Document) { d.Size = MaxProfileVideoBannerBytes + 1 }},
 		{"zero duration", func(d *Document) { d.Attributes[0].Duration = 0 }},
@@ -31,7 +35,9 @@ func TestDocumentIsProfileVideoBanner(t *testing.T) {
 		{"negative infinite duration", func(d *Document) { d.Attributes[0].Duration = math.Inf(-1) }},
 		{"round video", func(d *Document) { d.Attributes[0].RoundMessage = true }},
 		{"missing dimensions", func(d *Document) { d.Attributes[0].W = 0 }},
-		{"excessive dimensions", func(d *Document) { d.Attributes[0].W = 3841 }},
+		{"excessive width", func(d *Document) { d.Attributes[0].W = MaxProfileVideoBannerDimension + 1 }},
+		{"excessive height", func(d *Document) { d.Attributes[0].H = MaxProfileVideoBannerDimension + 1 }},
+		{"negative dimensions", func(d *Document) { d.Attributes[0].H = -1 }},
 		{"no video attribute", func(d *Document) { d.Attributes = nil }},
 	}
 	for _, tt := range tests {
