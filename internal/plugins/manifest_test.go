@@ -52,6 +52,10 @@ func TestValidateManifestRejectsUnsafeOrUnknownPermissions(t *testing.T) {
 		{"absolute path", func(m *Manifest) { m.Entrypoint = "/tmp/main.js" }},
 		{"wrong runtime extension", func(m *Manifest) { m.Target = TargetServer }},
 		{"bad semver", func(m *Manifest) { m.Version = "latest" }},
+		{"numeric prerelease leading zero", func(m *Manifest) { m.Version = "1.0.0-01" }},
+		{"empty prerelease identifier", func(m *Manifest) { m.Version = "1.0.0-alpha..1" }},
+		{"empty build identifier", func(m *Manifest) { m.Version = "1.0.0+build..x" }},
+		{"numeric prerelease identifier leading zero", func(m *Manifest) { m.Version = "2.4.0-rc.01" }},
 		{"bad reverse domain", func(m *Manifest) { m.ID = "weather" }},
 	}
 	for _, tc := range cases {
