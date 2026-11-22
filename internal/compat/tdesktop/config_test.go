@@ -22,6 +22,13 @@ func TestBuildConfigIncludesDefaultReaction(t *testing.T) {
 	}
 }
 
+func TestBuildConfigUsesPublicBaseURLForUsernameLinks(t *testing.T) {
+	config := BuildConfig(2, "192.0.2.10", 2398, time.Unix(1, 0), "https://links.example.test/femboygram", "")
+	if want := "https://links.example.test/femboygram/"; config.MeURLPrefix != want {
+		t.Fatalf("me_url_prefix = %q, want %q", config.MeURLPrefix, want)
+	}
+}
+
 func TestBuildConfigAdvertisesCanonicalPrimaryDC(t *testing.T) {
 	tests := []struct {
 		name string
