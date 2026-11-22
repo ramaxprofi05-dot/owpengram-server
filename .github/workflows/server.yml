@@ -32,6 +32,7 @@ jobs:
         run: |
           go test ./cmd/telesrv-admin -run "^$"
           go test ./internal/branding ./internal/links ./internal/plugins
+          go test ./internal/compat/tdesktop -run "^TestBuildConfigUsesPublicBaseURLForUsernameLinks$"
           go test ./internal/rpc -run TestFemboyGram
           go test ./internal/domain -run TestDocumentIsProfileVideoBanner
           go test ./internal/store/postgres -run TestProfileVideoBannerMediaReferences
