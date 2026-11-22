@@ -426,6 +426,13 @@ TELESRV_PUBLIC_APP_NAME=YourApp
 In production, keep `TELESRV_PUBLIC_LINK_WEB_ADDR` on loopback and reverse-proxy
 the public routes to it with HTTPS.
 
+`TELESRV_PUBLIC_BASE_URL` is also advertised to Android clients as
+`me_url_prefix` and is used to build public username/profile links. Set it to
+your real public HTTPS domain (for example, `https://chat.example.com`), not
+the server IP, `localhost`, or the internal `:2401` listener address.
+`TELESRV_ADVERTISE_IP` remains the separate IP clients use for the MTProto
+connection.
+
 ## 📱 Connect a client
 
 Use the OwpenGram clients, which have a built-in **Add Server** option on the
